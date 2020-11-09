@@ -3,15 +3,16 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"crypto/md5"
 	"fmt"
 	"net/http"
 	"regexp"
 
-	"encoding/json"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -391,104 +392,53 @@ func main() {
 	}
 
 	LoadConfigXML()
-	StartTCPServer()
-	return
-	/*
-		r := mux.NewRouter()
-		r.HandleFunc("/start/{label:[0-9]+}", handlerStartByLabel).Methods("POST") //.Queries("name", "{name}", "index", "{index:[0-9]+}", "folder", "{folder}")
-		r.HandleFunc("/stop/{label:[0-9]+}", handlerStopByLabel)
+	// StartTCPServer()
+	// return
+	r := mux.NewRouter()
+	// Add your routes as needed
+	r.HandleFunc("/start/{label:[0-9]+}", startTaskHandler).Methods("GET").Queries("standard", "{standard}")
+	r.HandleFunc("/stop/{label:[0-9]+}", stopTaskHandler).Methods("GET")
 
-		srv := &http.Server{
-			Handler: r,
-			Addr:    ":8000",
-			// Good practice: enforce timeouts for servers you create!
-			WriteTimeout: 15 * time.Second,
-			ReadTimeout:  15 * time.Second,
-		}
-
-		fmt.Println(srv)
-		srv.ListenAndServe()
-	*/
-}
-
-//name={name}&&index={index}&&folder={folder}
-func handlerStartByLabel(w http.ResponseWriter, r *http.Request) {
-	//fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
-	decoder := json.NewDecoder(r.Body)
-	var cmdinfo map[string]interface{}
-	err := decoder.Decode(&cmdinfo)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-	w.WriteHeader(http.StatusOK)
-
-	var name, folder, sdevname string
-	var index, label int
-	Is512Sector := false
-	if value, ok := cmdinfo["s512"]; ok {
-		Is512Sector = value.(bool)
-	}
-	if value, ok := cmdinfo["name"]; ok {
-		name = value.(string)
-	}
-	if value, ok := cmdinfo["folder"]; ok {
-		folder = value.(string)
-	}
-	if value, ok := cmdinfo["device"]; ok {
-		sdevname = value.(string)
-	}
-	if value, ok := cmdinfo["index"]; ok {
-		index = int(value.(float64))
-	}
-	if value, ok := cmdinfo["label"]; ok {
-		label = int(value.(float64))
+	srv := &http.Server{
+		Addr: "0.0.0.0:12100",
+		// Good practice to set timeouts to avoid Slowloris attacks.
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      r, // Pass our instance of gorilla/mux in.
 	}
 
-	vars := mux.Vars(r)
-
-	if value, ok := vars["label"]; ok {
-		label, _ = strconv.Atoi(value)
-	}
-
-	//fmt.Printf("%v_%s_%s_%s_%d_%d\n", Is512Sector, name, folder, sdevname, index, label)
-	if Is512Sector {
-		profile, err := configxmldata.FindProfileByName(name)
-		if err != nil {
-			w.Write(msgError)
-			return
-		}
-		patten := profile.CreatePatten()
-		go RunWipe(folder, sdevname, patten, label)
-	} else {
-		profile, err := configxmldata.FindProfileByName(name)
-		if err != nil {
-			w.Write(msgError)
-			return
-		}
-		patten := profile.CreatePatten()
-		sdevname = fmt.Sprintf("/dev/sg%d", index)
-		go RunWipe(folder, sdevname, patten, label)
-	}
-	w.Write(msgOK)
-	return
-}
-
-func handlerStopByLabel(w http.ResponseWriter, r *http.Request) {
-
-	w.WriteHeader(http.StatusOK)
-	vars := mux.Vars(r)
-	var label int
-
-	if value, ok := vars["label"]; ok {
-		label, _ = strconv.Atoi(value)
-	}
+	// Run our server in a goroutine so that it doesn't block.
 	go func() {
-		processlist.Remove(label)
+		if err := srv.ListenAndServe(); err != nil {
+			log.Println(err)
+		}
 	}()
 
-	w.Write(msgOK)
+	// StartTCPServer()
 
-	return
+	// fmt.Println(DetectData.dddetect)
+	//SASHDDinfo.RunCardInfo(1)
+	// fmt.Println(SASHDDinfo.SASHDDMapData)
+
+	c := make(chan os.Signal, 1)
+	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
+	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
+	signal.Notify(c, os.Interrupt)
+
+	// Block until we receive our signal.
+	<-c
+
+	// Create a deadline to wait for.
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	// Doesn't block if no connections, but will otherwise wait
+	// until the timeout deadline.
+	srv.Shutdown(ctx)
+	// Optionally, you could run srv.Shutdown in a goroutine and block on
+	// <-ctx.Done() if your application should wait for other services
+	// to finalize based on context cancellation.
+	log.Println("shutting down")
+	os.Exit(0)
+
 }

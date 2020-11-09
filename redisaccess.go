@@ -143,3 +143,13 @@ func Del(label int, key ...string) error {
 	}
 	return client.Del(ctx, key...).Err()
 }
+
+//FlushDB clean current database
+func FlushDB(label int) error {
+	client, ok := clients[label]
+	if !ok {
+		return errors.New("not found label")
+	}
+	return client.FlushDB(ctx).Err()
+
+}
