@@ -45,7 +45,6 @@ wget https://github.com/zytzjx/anthenacmc/raw/master/anthenacmc -O anthenacmc
 cp ./anthenacmc $HDSESHOME/anthenacmc
 chmod +x $HDSESHOME/anthenacmc
 
-sudo sed -i 's/databases 16/databases 81/g' /etc/redis/redis.conf
 sudo apt install ssh redis -y
 sudo apt install smartmontools -y
 sudo apt install wxhexeditor -y
@@ -56,6 +55,9 @@ sudo apt install lsscsi -y
 sudo apt install python3-pip -y
 sudo pip3 install redis
 sudo pip3 install pyqt5 
+
+sudo sed -i 's/databases 16/databases 81/g' /etc/redis/redis.conf
+sudo systemctl restart redis.service
 
 #download 
 echo "start downloading the CMC config..."
@@ -72,6 +74,17 @@ echo "start downloading hydradownload"
 wget https://github.com/zytzjx/hydradownload/raw/master/hydradownload -O hydradownload
 chmod +x hydradownload
 
+wget -i request.txt
 
+# url, servicename
+InstallService(){
+   sname=/etc/systemd/system/$2
+   wget $1 -O aaa.service
+   sudo mv ./aaa.service $sname
+   sudo chmod 644 $sname
+   sudo systemctl daemon-reload
+   sudo systemctl enable $2
+   sudo systemctl start $2
+}
 
-
+InstallService https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service hdderaser.service

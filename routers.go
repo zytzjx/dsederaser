@@ -19,7 +19,8 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	Is512Sector := false
 
-	folder := path.Join(os.ExpandEnv("HDSESHOME"), "logs")
+	folder := path.Join(os.Getenv("HDSESHOME"), "logs", fmt.Sprintf("label_%d", label))
+	os.MkdirAll(folder, os.ModePerm)
 
 	sdevname, err := GetString(label, "linuxname")
 	if err != nil {

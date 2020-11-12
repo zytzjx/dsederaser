@@ -94,7 +94,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 
 	processlist.Add(label, cmd)
 
-	f, err := os.OpenFile(fmt.Sprintf("%s/logs/%s/log_%d.log", os.Getenv("HDSESHOME"), logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(fmt.Sprintf("%s/log_%d.log", logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -141,7 +141,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 
 // RunSecureErase Run Secure Erase
 func RunSecureErase(logpath string, devicename string, label int) {
-	f, err := os.OpenFile(fmt.Sprintf("%s/logs/%s/log_%d.log", os.Getenv("HDSESHOME"), logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(fmt.Sprintf("%s/log_%d.log", logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}

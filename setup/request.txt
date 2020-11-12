@@ -1,0 +1,5 @@
+https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdsesconfig.xml
+https://github.com/zytzjx/dsederaser/raw/master/dsederaser
+https://raw.githubusercontent.com/zytzjx/dseddetect/master/appconf.xml
+https://github.com/zytzjx/dseddetect/raw/master/dseddetect
+https://github.com/zytzjx/dseddetect/raw/master/sas2ircu

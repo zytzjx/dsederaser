@@ -1,4 +1,4 @@
-module github.com/zytzjx/hdderaser
+module github.com/zytzjx/dsederaser
 
 go 1.14
 
