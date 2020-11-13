@@ -2,11 +2,18 @@ import os
 import redis
 import syslog
 import zipfile
+import stat
 
 syslog.openlog('dsed.deployment')
 syslog.syslog('dsed.deployment: ++ start')
 
 r = redis.Redis()
+
+dsed_home = os.getenv("DSEDHOME", '')
+if not bool(dsed_home):
+    dsed_home = '/opt/futuredial/dsed'
+    os.putenv("DSEDHOME", dsed_home)
+
 hydradownload_running = r.get('hydradownload.running')
 hydradownload_status = r.get('hydradownload.status')
 hydradownload_clientstatus = r.get('hydradownload.clientstatus')
@@ -14,6 +21,25 @@ hydradownload_clientstatus = r.get('hydradownload.clientstatus')
 syslog.syslog('dsed.deployment: hydradownload.running={}'.format(hydradownload_running))
 syslog.syslog('dsed.deployment: hydradownload.status={}'.format(hydradownload_status))
 syslog.syslog('dsed.deployment: hydradownload.clientstatus={}'.format(hydradownload_clientstatus))
+
+# change file executable
+def changefileExe():
+    filenames=[
+        "dsedcmc",
+        "athenasetting",
+        "dseddetect",
+        "dsederaser",
+        "dsedtransaction",
+        "dskwipe",
+        "sas2ircu"
+    ]
+
+    for filename in filenames:
+        # chmod +x transaction
+        fn = os.path.join(dsed_home,filename)
+        st = os.stat(fn)
+        os.chmod(fn, st.st_mode | stat.S_IEXEC|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
+
 
 if hydradownload_running==b'0' and hydradownload_status==b'complete':
     syslog.syslog('dsed.deployment: start deployment ...')
@@ -37,6 +63,9 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
             framework_ok = False
         i = r.spop('hydradownload.framework')
         pass
+
+    changefileExe()
+
     # hydradownload.phonedll
     syslog.syslog('dsed.deployment: read key hydradownload.phonedll')
     # hydradownload.

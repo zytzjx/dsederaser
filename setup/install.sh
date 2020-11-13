@@ -49,6 +49,8 @@ sudo apt install ssh redis -y
 sudo apt install smartmontools -y
 sudo apt install wxhexeditor -y
 sudo apt install lsscsi -y
+sudo apt install python3-pyqt5 -y
+
 #sudo apt install openssh-server -y
 #gsettings set org.gnome.Vino require-encryption false
 
@@ -75,21 +77,26 @@ echo "start downloading hydradownload"
 wget https://github.com/zytzjx/hydradownload/raw/master/hydradownload -O hydradownload
 chmod +x hydradownload
 
-wget -i request.txt
+wget https://raw.githubusercontent.com/zytzjx/dsederaser/master/utility/autoupdater.py -O autoupdater.py
+wget https://raw.githubusercontent.com/zytzjx/dsederaser/master/utility/cmcdeployment.py -O cmcdeployment.py
+python3 autoupdater.py
+python3 cmcdeployment.py
+
+#wget -i request.txt
 
 # url, servicename
 InstallService(){
-   sname=/etc/systemd/system/$2
-   wget $1 -O aaa.service
-   sudo mv ./aaa.service $sname
+   sname=/etc/systemd/system/$1
+   #wget $2 -O aaa.service
+   sudo mv ./$1 $sname
    sudo chmod 644 $sname
    sudo systemctl daemon-reload
-   sudo systemctl enable $2
-   sudo systemctl start $2
+   sudo systemctl enable $1
+   sudo systemctl start $1
 }
 
-InstallService https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service hdderaser.service
-#InstallService https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service hdderaser.service
+InstallService hdderaser.service #https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service
+InstallService hdderaser.service #https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service 
 
 InstallShortcut(){
    cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
