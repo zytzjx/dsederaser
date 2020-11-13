@@ -10,22 +10,22 @@ fi
 
 sudo mkdir -p /opt/futuredial
 sudo chown $USER:$USER /opt/futuredial
-sudo mkdir -p /opt/futuredial/hdses
+sudo mkdir -p /opt/futuredial/dsed
 sudo mkdir -p /opt/futuredial/hydradownloader
-sudo chown $USER:$USER /opt/futuredial/hdses
+sudo chown $USER:$USER /opt/futuredial/dsed
 sudo chown $USER:$USER /opt/futuredial/hydradownloader
 
 # echo add environment
-if [[ -z $HDSESHOME ]]; then 
-   echo "set HDSESHOME=/opt/futuredial/hdses"
-   export HDSESHOME=/opt/futuredial/hdses
-   echo 'export HDSESHOME=/opt/futuredial/hdses' >> ~/.bashrc
+if [[ -z $DSEDHOME ]]; then 
+   echo "set DSEDHOME=/opt/futuredial/dsed"
+   export DSEDHOME=/opt/futuredial/dsed
+   echo 'export DSEDHOME=/opt/futuredial/dsed' >> ~/.bashrc
    source ~/.bashrc
 fi
 
-echo $HDSESHOME
+echo $DSEDHOME
 
-# echo "input serial number"
+# echo "input serial number" db6a1e7f-69f7-4e86-9d50-5c4b0abcbf08
 # echo -e "\e[1;31mThis is red text\e[0m"
 # echo "Please input this product SN:"
 echo -e "\e[1;31mPlease input this product SN:\e[0m"
@@ -39,11 +39,11 @@ while read -r -n 1 key; do
 done
 echo $serialnumber
 
-echo "start downloading anthenacmc"
-wget https://github.com/zytzjx/anthenacmc/raw/master/anthenacmc -O anthenacmc
+echo "start downloading dsedcmc"
+wget https://bitbucket.org/yuetingzhang/dsedcmc/raw/799ecc5033659233441261f33df6caa842e1d26b/dsedcmc -O dsedcmc
 
-cp ./anthenacmc $HDSESHOME/anthenacmc
-chmod +x $HDSESHOME/anthenacmc
+cp ./dsedcmc $DSEDHOME/dsedcmc
+chmod +x $DSEDHOME/dsedcmc
 
 sudo apt install ssh redis -y
 sudo apt install smartmontools -y
@@ -53,16 +53,17 @@ sudo apt install lsscsi -y
 #gsettings set org.gnome.Vino require-encryption false
 
 sudo apt install python3-pip -y
-sudo pip3 install redis
-sudo pip3 install pyqt5 
+pip3 install redis
+pip3 install pyqt5 
+pip3 install pyqt5 --upgrade
 
 sudo sed -i 's/databases 16/databases 81/g' /etc/redis/redis.conf
 sudo systemctl restart redis.service
 
 #download 
 echo "start downloading the CMC config..."
-cd $HDSESHOME
-$HDSESHOME/anthenacmc -uuid=$serialnumber
+cd $DSEDHOME
+$DSEDHOME/dsedcmc -uuid=$serialnumber
 if [ $? -eq 0 ]; then
   echo "Success: Serial Number is verified."
 else
@@ -88,3 +89,10 @@ InstallService(){
 }
 
 InstallService https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service hdderaser.service
+#InstallService https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service hdderaser.service
+
+InstallShortcut(){
+   cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
+   chmod +0744 ~/Desktop/dsed.desktop
+   gio set ~/Desktop/dsed.desktop "metadata::trusted" true
+}
