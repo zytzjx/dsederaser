@@ -40,7 +40,7 @@ done
 echo $serialnumber
 
 echo "start downloading dsedcmc"
-wget https://bitbucket.org/yuetingzhang/dsedcmc/raw/799ecc5033659233441261f33df6caa842e1d26b/dsedcmc -O dsedcmc
+wget https://github.com/zytzjx/dsederaser/raw/master/setup/dsedcmc -O dsedcmc
 
 cp ./dsedcmc $DSEDHOME/dsedcmc
 chmod +x $DSEDHOME/dsedcmc
