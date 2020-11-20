@@ -3,6 +3,7 @@ import redis
 import syslog
 import zipfile
 import stat
+import json
 
 syslog.openlog('dsed.deployment')
 syslog.syslog('dsed.deployment: ++ start')
@@ -22,6 +23,24 @@ syslog.syslog('dsed.deployment: hydradownload.running={}'.format(hydradownload_r
 syslog.syslog('dsed.deployment: hydradownload.status={}'.format(hydradownload_status))
 syslog.syslog('dsed.deployment: hydradownload.clientstatus={}'.format(hydradownload_clientstatus))
 
+def stopService():
+    #stop service
+    r.publish("inittask", json.dumps({'message':'stop daemon service...'}))
+    sudoPassword = 'qa'
+    command = 'systemctl stop dseddetect.service'
+    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+    command = 'systemctl stop hdderaser.service'
+    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+
+def startService():
+    #stop service
+    r.publish("inittask", json.dumps({'message':'start daemon service...'}))
+    sudoPassword = 'qa'
+    command = 'systemctl start dseddetect.service'
+    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+    command = 'systemctl start hdderaser.service'
+    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+
 # change file executable
 def changefileExe():
     filenames=[
@@ -37,8 +56,9 @@ def changefileExe():
     for filename in filenames:
         # chmod +x transaction
         fn = os.path.join(dsed_home,filename)
-        st = os.stat(fn)
-        os.chmod(fn, st.st_mode | stat.S_IEXEC|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
+        if os.path.exists(fn):
+            st = os.stat(fn)
+            os.chmod(fn, st.st_mode | stat.S_IEXEC|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
 
 
 if hydradownload_running==b'0' and hydradownload_status==b'complete':
@@ -50,6 +70,7 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
     framework_ok = True
     syslog.syslog('dsed.deployment: read key hydradownload.framework')
     i = r.spop('hydradownload.framework')
+    stopService()
     while bool(i):
         fn = i.decode('utf-8')
         syslog.syslog('dsed.deployment: value {}'.format(fn))
@@ -65,7 +86,8 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
         pass
 
     changefileExe()
-
+    startService()
+    
     # hydradownload.phonedll
     syslog.syslog('dsed.deployment: read key hydradownload.phonedll')
     # hydradownload.
@@ -81,3 +103,4 @@ for k in r.scan_iter('hydradownload*'):
     r.delete(k)
 syslog.syslog('dsed.deployment: -- complete')
 syslog.closelog()
+r.publish("inittask", '{"action":"close"}')

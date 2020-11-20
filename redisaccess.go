@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -31,6 +32,26 @@ func CreateRedisPool(count int) (map[int]*redis.Client, error) {
 		clients[i] = c
 	}
 	return clients, nil
+}
+
+// PublishTaskDone publis for other Subscribe
+func PublishTaskDone(label int, value interface{}) (int64, error) {
+	client, ok := clients[label]
+	if !ok {
+		return 0, errors.New("not found label")
+	}
+	aa := map[string]interface{}{"taskdone": value}
+	rsProcess, _ := json.Marshal(map[string]interface{}{"label": label, "msg": aa})
+	return client.Publish(ctx, "progress", rsProcess).Result()
+}
+
+// Publish publis for other Subscribe
+func Publish(label int, channel string, msg interface{}) (int64, error) {
+	client, ok := clients[label]
+	if !ok {
+		return 0, errors.New("not found label")
+	}
+	return client.Publish(ctx, channel, msg).Result()
 }
 
 func ping(label int) error {
@@ -104,8 +125,10 @@ func setProgressbar(label int, values []string) error {
 	kv["progress"] = values[4]
 	kv["optime"] = fmt.Sprintf("%s/%s", kv["time"], kv["est"])
 
-	return client.HSet(ctx, "processing", kv).Err()
+	rsProcess, _ := json.Marshal(map[string]interface{}{"label": label, "msg": kv})
+	Publish(label, "progress", rsProcess)
 
+	return client.HSet(ctx, "processing", kv).Err()
 }
 
 // GetFloat get float

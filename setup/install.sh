@@ -103,3 +103,5 @@ InstallShortcut(){
    chmod +0744 ~/Desktop/dsed.desktop
    gio set ~/Desktop/dsed.desktop "metadata::trusted" true
 }
+
+InstallShortcut

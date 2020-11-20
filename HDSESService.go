@@ -94,9 +94,14 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 
 	processlist.Add(label, cmd)
 
-	f, err := os.OpenFile(fmt.Sprintf("%s/log_%d.log", logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(fmt.Sprintf("%s/log_%d.log", logpath, label), os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
+		Set(label, "errorcode", 1, 0)
+		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+		// Publish(label, "taskdone", 1)
+		PublishTaskDone(label, 20)
+		return err
 	}
 	defer f.Close()
 	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten))
@@ -136,14 +141,36 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 
 	// Wait for the command to finish
 	err = cmd.Wait()
+	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			waitStatus := exitError.Sys().(syscall.WaitStatus)
+			fmt.Printf("WipeExitCode=%d\n", waitStatus.ExitStatus())
+			f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", waitStatus.ExitStatus()))
+			Set(label, "errorcode", waitStatus.ExitStatus(), 0)
+		}
+	} else {
+		// Success
+		waitStatus := cmd.ProcessState.Sys().(syscall.WaitStatus)
+		fmt.Printf("WipeExitCode=%d\n", waitStatus.ExitStatus())
+		f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", waitStatus.ExitStatus()))
+		Set(label, "errorcode", waitStatus.ExitStatus(), 0)
+	}
+	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+	// Publish(label, "taskdone", 1)
+	PublishTaskDone(label, 21)
 	return err
 }
 
 // RunSecureErase Run Secure Erase
 func RunSecureErase(logpath string, devicename string, label int) {
-	f, err := os.OpenFile(fmt.Sprintf("%s/log_%d.log", logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(fmt.Sprintf("%s/log_%d.log", logpath, label), os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
+		Set(label, "errorcode", 1, 0)
+		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+		// Publish(label, "taskdone", 1)
+		PublishTaskDone(label, 20)
+		return
 	}
 	defer f.Close()
 	tstart := time.Now()
@@ -211,7 +238,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		handlelogprogress(label, line)
 		f.WriteString(fmt.Sprintf("end Task local time and date: %s\n", time.Now().Format("Mon Jan _2 15:04:05 2006")))
 		//f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", 0))
-		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+		// Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 		smd51, err := funReadData()
 		if err != nil {
 			errorcode = 10
@@ -239,7 +266,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		handlelogprogress(label, line)
 		f.WriteString(fmt.Sprintf("end Task local time and date: %s\n", time.Now().Format("Mon Jan _2 15:04:05 2006")))
 		//f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", 0))
-		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+		// Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 
 		smd51, err := funReadData()
 		if err != nil {
@@ -257,6 +284,9 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", errorcode))
 		Set(label, "errorcode", errorcode, 0)
 	}
+	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+	// Publish(label, "taskdone", 1)
+	PublishTaskDone(label, 23)
 }
 
 func fmtDuration(d time.Duration) string {
@@ -312,6 +342,7 @@ func handlelogprogress(label int, line string) {
 	if setProgressbar(label, infos) != nil {
 		//print log
 	}
+
 }
 
 // RunWipe call dskwipe

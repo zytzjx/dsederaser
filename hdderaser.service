@@ -10,9 +10,10 @@ After=graphical.target
 
 [Service]
 Type=simple
-User=qa
+#User=qa
 Restart=always
-ExecStart=/opt/futuredial/hdses/dsederaser
+WorkingDirectory=/opt/futuredial/dsed
+ExecStart=sudo /opt/futuredial/dsed/dsederaser
 
 [Install]
 WantedBy=multi-user.target

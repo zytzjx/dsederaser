@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=DSED
 Comment=Futuredial DSED
-Exec=/usr/bin/python3 /opt/futuredial/dsed/athenaloader.py
+Exec=/usr/bin/python3 /opt/futuredial/dsed/splash.py
 Icon=/opt/futuredial/dsed/NewDSE.ico
 Terminal=false
 Type=Application

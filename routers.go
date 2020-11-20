@@ -24,6 +24,7 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	sdevname, err := GetString(label, "linuxname")
 	if err != nil {
+		Set(label, "errorcode", 10, 0)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(msgError)
@@ -34,6 +35,7 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	sgName, err := GetString(label, "sglibname")
 	if err != nil {
+		Set(label, "errorcode", 11, 0)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(msgError)
@@ -43,11 +45,18 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("%v_%s_%s_%s_%s_%d\n", Is512Sector, name, folder, sdevname, sgName, label)
 	if name == "SecureErase" {
 		go RunSecureErase(folder, sdevname, label)
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(msgOK)
 		return
 	}
 	if Is512Sector && len(sdevname) > 0 {
 		profile, err := configxmldata.FindProfileByName(name)
 		if err != nil {
+			Set(label, "errorcode", 12, 0)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(msgError)
 			return
 		}
 		patten := profile.CreatePatten()
@@ -55,6 +64,10 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		profile, err := configxmldata.FindProfileByName(name)
 		if err != nil {
+			Set(label, "errorcode", 12, 0)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(msgError)
 			return
 		}
 		patten := profile.CreatePatten()
