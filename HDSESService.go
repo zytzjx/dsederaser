@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/md5"
 	"fmt"
@@ -80,6 +81,22 @@ func divmod(numerator, denominator int64) (quotient, remainder int64) {
 	return
 }
 
+// ScanItems 逗号或分号 的自定义分隔
+func ScanItems(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := bytes.IndexAny(data, "\r"); i >= 0 {
+		return i + 1, data[0:i], nil
+	}
+
+	if atEOF {
+		return len(data), data, nil
+	}
+
+	return 0, nil, nil
+}
+
 // RunExeWipe run dskwipe and handle output to database
 func RunExeWipe(logpath string, devicename string, patten string, label int) error {
 
@@ -90,6 +107,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 	dskwipe := path.Join(dir, "dskwipe")
 	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+	SetTransaction(label, "StartTime", time.Now().Format("Mon Jan _2 15:04:05 2006"))
 	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "8000", patten)
 
 	processlist.Add(label, cmd)
@@ -98,6 +116,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 		Set(label, "errorcode", 1, 0)
+		SetTransaction(label, "errorCode", 100)
 		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 		// Publish(label, "taskdone", 1)
 		PublishTaskDone(label, 20)
@@ -117,6 +136,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 
 	// Create a scanner which scans r in a line-by-line fashion
 	scanner := bufio.NewScanner(r)
+	scanner.Split(ScanItems)
 	// Use the scanner to scan the output line by line and log it
 	// It's running in a goroutine so that it doesn't block
 	go func() {
@@ -125,6 +145,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 		for scanner.Scan() {
 			line := scanner.Text()
 			//HandleLog(label, line)
+			f.WriteString(line + "\n")
 			handlelogprogress(label, line)
 		}
 
@@ -147,6 +168,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 			fmt.Printf("WipeExitCode=%d\n", waitStatus.ExitStatus())
 			f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", waitStatus.ExitStatus()))
 			Set(label, "errorcode", waitStatus.ExitStatus(), 0)
+			SetTransaction(label, "errorCode", waitStatus.ExitStatus())
 		}
 	} else {
 		// Success
@@ -154,6 +176,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 		fmt.Printf("WipeExitCode=%d\n", waitStatus.ExitStatus())
 		f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", waitStatus.ExitStatus()))
 		Set(label, "errorcode", waitStatus.ExitStatus(), 0)
+		SetTransaction(label, "errorCode", waitStatus.ExitStatus())
 	}
 	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 	// Publish(label, "taskdone", 1)
@@ -167,6 +190,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 		Set(label, "errorcode", 1, 0)
+		SetTransaction(label, "errorCode", 100)
 		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 		// Publish(label, "taskdone", 1)
 		PublishTaskDone(label, 20)
@@ -176,6 +200,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 	tstart := time.Now()
 	f.WriteString(fmt.Sprintf("Start Task local time and date: %s\n", tstart.Format("Mon Jan _2 15:04:05 2006")))
 	Set(label, "starttasktime", tstart.Format("Mon Jan _2 15:04:05 2006"), 0)
+	SetTransaction(label, "StartTime", time.Now().Format("Mon Jan _2 15:04:05 2006"))
 	stime := tstart.Format("15:04:05")
 	funReadData := func() (string, error) {
 		// if sector size is 520, this code is not working.Must use sglib. but not find go sglib.
@@ -280,9 +305,11 @@ func RunSecureErase(logpath string, devicename string, label int) {
 	if bverify && errorcode == 0 {
 		f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", 0))
 		Set(label, "errorcode", 0, 0)
+		SetTransaction(label, "errorCode", 0)
 	} else {
 		f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", errorcode))
 		Set(label, "errorcode", errorcode, 0)
+		SetTransaction(label, "errorCode", errorcode)
 	}
 	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 	// Publish(label, "taskdone", 1)
@@ -300,6 +327,7 @@ func fmtDuration(d time.Duration) string {
 func handlelogprogress(label int, line string) {
 	var validlog = regexp.MustCompile(`(\d*\.\d*)%.*?(\d*\.\d*)%.*?(\d*\.\d*)$`)
 	if !validlog.MatchString(line) {
+		fmt.Println("Not Match:" + line)
 		return
 	}
 	sp := func(r rune) bool {
@@ -339,8 +367,9 @@ func handlelogprogress(label int, line string) {
 	infos[4] = goprogress(infos[4])
 
 	fmt.Println(infos)
-	if setProgressbar(label, infos) != nil {
+	if err := setProgressbar(label, infos); err != nil {
 		//print log
+		fmt.Println(err)
 	}
 
 }
@@ -354,11 +383,12 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 	dskwipe := path.Join(dir, "dskwipe")
 	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+	SetTransaction(label, "StartTime", time.Now().Format("Mon Jan _2 15:04:05 2006"))
 	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "8000", patten)
 
 	processlist.Add(label, cmd)
 
-	f, err := os.OpenFile(fmt.Sprintf("%s/logs/%s/log_%d.log", os.Getenv("HDSESHOME"), logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(fmt.Sprintf("%s/logs/%s/log_%d.log", os.Getenv("DSEDHOME"), logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -397,6 +427,7 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 			fmt.Printf("WipeExitCode=%d\n", waitStatus.ExitStatus())
 			f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", waitStatus.ExitStatus()))
 			Set(label, "errorcode", waitStatus.ExitStatus(), 0)
+			SetTransaction(label, "errorCode", waitStatus.ExitStatus())
 		}
 	} else {
 		// Success
@@ -404,6 +435,7 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 		fmt.Printf("WipeExitCode=%d\n", waitStatus.ExitStatus())
 		f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", waitStatus.ExitStatus()))
 		Set(label, "errorcode", waitStatus.ExitStatus(), 0)
+		SetTransaction(label, "errorCode", waitStatus.ExitStatus())
 	}
 	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 }
@@ -414,7 +446,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 20.10.25.0, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 20.11.21.0, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{
@@ -430,6 +462,7 @@ func main() {
 	r.HandleFunc("/start/{label:[0-9]+}", startTaskHandler).Methods("GET").Queries("standard", "{standard}")
 	r.HandleFunc("/stop/{label:[0-9]+}", stopTaskHandler).Methods("GET")
 
+	CreateRedisPool(GetLabelsCnt())
 	srv := &http.Server{
 		Addr: "0.0.0.0:12100",
 		// Good practice to set timeouts to avoid Slowloris attacks.

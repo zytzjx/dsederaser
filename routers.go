@@ -19,11 +19,12 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	Is512Sector := false
 
-	folder := path.Join(os.Getenv("HDSESHOME"), "logs", fmt.Sprintf("label_%d", label))
+	folder := path.Join(os.Getenv("DSEDHOME"), "logs", fmt.Sprintf("label_%d", label))
 	os.MkdirAll(folder, os.ModePerm)
 
 	sdevname, err := GetString(label, "linuxname")
 	if err != nil {
+		fmt.Println("linuxname not found")
 		Set(label, "errorcode", 10, 0)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -33,8 +34,9 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if len(sdevname) > 0 {
 		exec.Command("umount", sdevname).Output()
 	}
-	sgName, err := GetString(label, "sglibname")
+	sgName, err := GetString(label, "sglibName")
 	if err != nil {
+		fmt.Println("sglibName not found")
 		Set(label, "errorcode", 11, 0)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -53,6 +55,7 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if Is512Sector && len(sdevname) > 0 {
 		profile, err := configxmldata.FindProfileByName(name)
 		if err != nil {
+			fmt.Println("FindProfileByName not found")
 			Set(label, "errorcode", 12, 0)
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Header().Set("Content-Type", "application/json")
@@ -64,6 +67,7 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		profile, err := configxmldata.FindProfileByName(name)
 		if err != nil {
+			fmt.Println("FindProfileByName not found")
 			Set(label, "errorcode", 12, 0)
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Header().Set("Content-Type", "application/json")

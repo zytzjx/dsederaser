@@ -100,7 +100,7 @@ InstallService hdderaser.service #https://raw.githubusercontent.com/zytzjx/dsede
 
 InstallShortcut(){
    cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
-   chmod +0744 ~/Desktop/dsed.desktop
+   chmod +0644 ~/Desktop/dsed.desktop
    gio set ~/Desktop/dsed.desktop "metadata::trusted" true
 }
 

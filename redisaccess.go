@@ -18,6 +18,16 @@ var rdb = redis.NewClient(&redis.Options{
 })
 var clients map[int]*redis.Client
 
+//GetLabelsCnt get labels
+func GetLabelsCnt() int {
+	labels, err := rdb.Get(ctx, "labelcnt").Int()
+	if err != nil {
+		labels = 48
+		return labels
+	}
+	return labels
+}
+
 // CreateRedisPool create redis client
 func CreateRedisPool(count int) (map[int]*redis.Client, error) {
 	clients = make(map[int]*redis.Client)
@@ -65,6 +75,16 @@ func ping(label int) error {
 	}
 	fmt.Println(pong, err)
 	return nil
+}
+
+// SetTransaction set into transaction hash map
+func SetTransaction(label int, key string, value interface{}) error {
+	client, ok := clients[label]
+	if !ok {
+		return errors.New("not found label")
+	}
+
+	return client.HSet(ctx, "transaction", key, value).Err()
 }
 
 // GetTransaction Transaction
@@ -118,6 +138,7 @@ func setProgressbar(label int, values []string) error {
 	if len(values) < 9 {
 		return errors.New("parser progress line error")
 	}
+	//[1 1 0x00 98.644% 98.64% 00:28 00:28:40 21:27:57 00:29 172 MB/s 172.05]
 	kv := make(map[string]interface{})
 	kv["speed"] = values[9]
 	kv["time"] = values[5]
