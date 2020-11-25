@@ -107,7 +107,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 	dskwipe := path.Join(dir, "dskwipe")
 	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
-	SetTransaction(label, "StartTime", time.Now().Format("Mon Jan _2 15:04:05 2006"))
+	SetTransaction(label, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
 	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "8000", patten)
 
 	processlist.Add(label, cmd)
@@ -200,7 +200,9 @@ func RunSecureErase(logpath string, devicename string, label int) {
 	tstart := time.Now()
 	f.WriteString(fmt.Sprintf("Start Task local time and date: %s\n", tstart.Format("Mon Jan _2 15:04:05 2006")))
 	Set(label, "starttasktime", tstart.Format("Mon Jan _2 15:04:05 2006"), 0)
-	SetTransaction(label, "StartTime", time.Now().Format("Mon Jan _2 15:04:05 2006"))
+	values := []string{"1", "1", "0x00", "0.00%", "0.00%", "00:01", "", "", "00:01", "0.00", "0.00"}
+	setProgressbar(label, values)
+	SetTransaction(label, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
 	stime := tstart.Format("15:04:05")
 	funReadData := func() (string, error) {
 		// if sector size is 520, this code is not working.Must use sglib. but not find go sglib.
@@ -271,6 +273,8 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		if errorcode == 0 {
 			bverify = smd51 == smd5
 		}
+		values := []string{"1", "1", "0x00", "100.00%", "100.00%", send, send, stime, fmt.Sprintf("%d", tend), "0.00", "0.00"}
+		setProgressbar(label, values)
 
 	} else {
 		f.WriteString(fmt.Sprintf("hdparm --yes-i-know-what-i-am-doing --sanitize-crypto-scramble %s\n", devicename))
@@ -300,6 +304,8 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		if errorcode == 0 {
 			bverify = smd51 != smd5
 		}
+		values := []string{"1", "1", "0x00", "100.00%", "100.00%", "00:01", send, stime, "00:01", "0.00", "0.00"}
+		setProgressbar(label, values)
 	}
 
 	if bverify && errorcode == 0 {
@@ -383,7 +389,7 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 	dskwipe := path.Join(dir, "dskwipe")
 	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
-	SetTransaction(label, "StartTime", time.Now().Format("Mon Jan _2 15:04:05 2006"))
+	SetTransaction(label, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
 	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "8000", patten)
 
 	processlist.Add(label, cmd)

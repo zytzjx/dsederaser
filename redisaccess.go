@@ -141,6 +141,9 @@ func setProgressbar(label int, values []string) error {
 	//[1 1 0x00 98.644% 98.64% 00:28 00:28:40 21:27:57 00:29 172 MB/s 172.05]
 	kv := make(map[string]interface{})
 	kv["speed"] = values[9]
+	if values[5] == "" {
+		values[5] = "00:00"
+	}
 	kv["time"] = values[5]
 	kv["est"] = values[8]
 	kv["progress"] = values[4]
