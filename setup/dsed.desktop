@@ -1,11 +1,11 @@
 [Desktop Entry]
 Name=DSED
 Comment=Futuredial DSED
-Exec=/usr/bin/python3 /opt/futuredial/dsed/splash.py
+Exec=env DSEDHOME=/opt/futuredial/dsed /usr/bin/python3 /opt/futuredial/dsed/splash.py
 Icon=/opt/futuredial/dsed/NewDSE.ICO
 Terminal=false
 Type=Application
 Categories=Application;
 StartupNotify=true
 NoDisplay=true
-Path=/opt/futuredial/dsed
+Path=/opt/futuredial/dsed/
