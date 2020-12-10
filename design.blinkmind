@@ -1,7 +1,7 @@
 {
   "rootTopicKey": "ca8091ae-6130-40c4-ae40-74700927c3b6",
   "editorRootTopicKey": "ca8091ae-6130-40c4-ae40-74700927c3b6",
-  "focusKey": "bfc599b1-e65e-4c36-888f-a9af66f1a7ea",
+  "focusKey": "1f3c7dfd-f8e1-4ba5-b1e0-f6e42c3c7e29",
   "extData": {
     "TOPIC_REFERENCE": {
       "reference": {}
@@ -76,12 +76,25 @@
       ]
     },
     {
+      "key": "2cf4fd58-4ab6-4573-a382-d8b2aca63384",
+      "parentKey": "ca8091ae-6130-40c4-ae40-74700927c3b6",
+      "subKeys": [],
+      "collapse": false,
+      "style": null,
+      "blocks": [
+        {
+          "type": "CONTENT",
+          "data": "Installation"
+        }
+      ]
+    },
+    {
       "key": "55a23ba5-b7c7-42bb-8bae-f8026027da64",
       "parentKey": "ca8091ae-6130-40c4-ae40-74700927c3b6",
       "subKeys": [
         "fed3a51f-2144-492d-8da4-1f94600a4256"
       ],
-      "collapse": true,
+      "collapse": false,
       "style": null,
       "blocks": [
         {
@@ -109,7 +122,7 @@
       "subKeys": [
         "693d9f0d-f8e5-4832-ba27-8ce8dacefa21"
       ],
-      "collapse": true,
+      "collapse": false,
       "style": null,
       "blocks": [
         {
@@ -184,10 +197,11 @@
         "1f3c7dfd-f8e1-4ba5-b1e0-f6e42c3c7e29",
         "55a23ba5-b7c7-42bb-8bae-f8026027da64",
         "9625e623-0b39-4ee2-8223-14097344a591",
-        "bfc599b1-e65e-4c36-888f-a9af66f1a7ea"
+        "bfc599b1-e65e-4c36-888f-a9af66f1a7ea",
+        "2cf4fd58-4ab6-4573-a382-d8b2aca63384"
       ],
       "collapse": false,
-      "style": null,
+      "style": "{\"contentStyle\":{\"fontSize\":16}}",
       "blocks": [
         {
           "type": "CONTENT",
@@ -201,8 +215,8 @@
       "subKeys": [
         "9081e7ae-d55d-4cfc-9c8c-d4747784b37e"
       ],
-      "collapse": true,
-      "style": null,
+      "collapse": false,
+      "style": "{\"contentStyle\":{\"lineHeight\":\"1.0\",\"fontSize\":19}}",
       "blocks": [
         {
           "type": "CONTENT",
@@ -231,7 +245,7 @@
         "e1099343-2012-45ee-80e6-2a8c067f3e0a",
         "7d720eaa-fc43-4329-bca2-b5089edaa00c"
       ],
-      "collapse": true,
+      "collapse": false,
       "style": null,
       "blocks": [
         {
@@ -300,7 +314,7 @@
         "9a2e451a-c6b1-48b0-bd1c-30235ed7c2c0",
         "c5d5b43f-dfeb-400f-89ff-5495f2a338a4"
       ],
-      "collapse": true,
+      "collapse": false,
       "style": null,
       "blocks": [
         {
@@ -415,7 +429,7 @@
         "5942d619-23e8-4f90-9243-913590c18b4e",
         "0b03586a-1092-4070-83df-4d785c9dd4e8"
       ],
-      "collapse": true,
+      "collapse": false,
       "style": null,
       "blocks": [
         {
@@ -437,8 +451,7 @@
       "marginH": 60,
       "marginV": 20,
       "contentStyle": {
-        "lineHeight": "1.5",
-        "fontSize": "16px"
+        "lineHeight": "1.5"
       },
       "linkStyle": {
         "lineRadius": 5,
@@ -447,29 +460,44 @@
       },
       "rootTopic": {
         "contentStyle": {
-          "fontSize": "36px"
+          "fontSize": "34px",
+          "borderRadius": "35px",
+          "padding": "16px 18px 16px 18px"
         },
         "subLinkStyle": {
           "lineType": "curve",
-          "lineWidth": "3px"
+          "lineWidth": "3px",
+          "lineColor": "rgb(113, 203, 45)"
         }
       },
       "primaryTopic": {
         "contentStyle": {
-          "fontSize": "24px"
+          "borderWidth": "1px",
+          "borderStyle": "solid",
+          "borderRadius": "20px",
+          "fontSize": "17px",
+          "padding": "10px 15px 10px 15px"
         },
         "subLinkStyle": {
           "lineType": "curve",
-          "lineWidth": "3px"
+          "lineWidth": "3px",
+          "lineColor": "rgb(113, 203, 45)"
         }
       },
       "normalTopic": {
+        "contentStyle": {
+          "border": "1px solid #e8eaec",
+          "borderRadius": "20px",
+          "fontSize": "17px",
+          "padding": "4px 10px"
+        },
         "subLinkStyle": {
           "lineType": "curve",
-          "lineWidth": "3px"
+          "lineWidth": "3px",
+          "lineColor": "white"
         }
       }
     }
   },
-  "formatVersion": null
+  "formatVersion": "0.0"
 }

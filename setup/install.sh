@@ -96,13 +96,13 @@ InstallService(){
 }
 
 InstallService hdderaser.service #https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service
-InstallService hdderaser.service #https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service 
+InstallService dseddetect.service #https://raw.githubusercontent.com/zytzjx/dseddetect/master/dseddetect.service 
 
-crontab $DSEDHOME/download_cron
+#crontab $DSEDHOME/download_cron
 
 InstallShortcut(){
    cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
-   chmod +0644 ~/Desktop/dsed.desktop
+   chmod +x ~/Desktop/dsed.desktop
    gio set ~/Desktop/dsed.desktop "metadata::trusted" true
 }
 
