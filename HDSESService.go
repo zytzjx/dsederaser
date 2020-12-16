@@ -278,13 +278,21 @@ func RunSecureErase(logpath string, devicename string, label int) {
 
 	} else {
 		f.WriteString(fmt.Sprintf("hdparm --yes-i-know-what-i-am-doing --sanitize-crypto-scramble %s\n", devicename))
-		exec.Command("hdparm", "--yes-i-know-what-i-am-doing", "--sanitize-crypto-scramble", devicename).Output()
-		time.Sleep(2 * time.Second)
-		f.WriteString(fmt.Sprintf("hdparm --sanitize-status %s\n", devicename))
-		exec.Command("hdparm", "--sanitize-status", devicename).Output()
-		time.Sleep(2 * time.Second)
-		exec.Command("hdparm", "--sanitize-status", devicename).Output()
-
+		data, err := exec.Command("hdparm", "--yes-i-know-what-i-am-doing", "--sanitize-crypto-scramble", devicename).CombinedOutput()
+		if err != nil {
+			errorcode = 100
+		}
+		f.WriteString(string(data))
+		if strings.IndexAny(string(data), "is not supported") < 0 {
+			time.Sleep(2 * time.Second)
+			f.WriteString(fmt.Sprintf("hdparm --sanitize-status %s\n", devicename))
+			exec.Command("hdparm", "--sanitize-status", devicename).Output()
+			time.Sleep(2 * time.Second)
+			exec.Command("hdparm", "--sanitize-status", devicename).Output()
+		} else {
+			errorcode = 100 //not support
+			f.WriteString(fmt.Sprintf("error=%v\n", err))
+		}
 		tend := (int64)(time.Now().Sub(tstart).Seconds())
 		hours, remainder := divmod(tend, 3600)
 		minutes, seconds := divmod(remainder, 60)
@@ -296,13 +304,14 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		f.WriteString(fmt.Sprintf("end Task local time and date: %s\n", time.Now().Format("Mon Jan _2 15:04:05 2006")))
 		//f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", 0))
 		// Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
-
-		smd51, err := funReadData()
-		if err != nil {
-			errorcode = 10
-		}
-		if errorcode == 0 {
-			bverify = smd51 != smd5
+		if errorcode != 100 {
+			smd51, err := funReadData()
+			if err != nil {
+				errorcode = 10
+			}
+			if errorcode == 0 {
+				bverify = smd51 != smd5
+			}
 		}
 		values := []string{"1", "1", "0x00", "100.00%", "100.00%", "00:01", send, stime, "00:01", "0.00", "0.00"}
 		setProgressbar(label, values)
@@ -452,7 +461,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 20.11.21.0, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 20.12.15.0, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{
@@ -461,8 +470,7 @@ func main() {
 	}
 
 	LoadConfigXML()
-	// StartTCPServer()
-	// return
+
 	r := mux.NewRouter()
 	// Add your routes as needed
 	r.HandleFunc("/start/{label:[0-9]+}", startTaskHandler).Methods("GET").Queries("standard", "{standard}")
@@ -484,12 +492,6 @@ func main() {
 			log.Println(err)
 		}
 	}()
-
-	// StartTCPServer()
-
-	// fmt.Println(DetectData.dddetect)
-	//SASHDDinfo.RunCardInfo(1)
-	// fmt.Println(SASHDDinfo.SASHDDMapData)
 
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
