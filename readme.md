@@ -31,3 +31,15 @@ Pass No. of          Pass   Passes   Passes     Pass              Est.     MB/  
 |optime|time/est|
 
 
+# Error code List
+### base errorcode 36000, all error code +36000
+|error code|means|
+|----------|-----|
+|999|user cancel task|
+|100|sanitize not support|
+|123|unknow failed, not start erasing|
+|250|user input disk transcation|
+|10|sanitize verify failed|
+|11|not find linuxname|
+|12|not find sgName|
+|13|create log file failed|
