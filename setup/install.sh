@@ -47,7 +47,7 @@ chmod +x $DSEDHOME/dsedcmc
 
 sudo apt install ssh redis -y
 sudo apt install smartmontools -y
-sudo apt install wxhexeditor -y
+#sudo apt install wxhexeditor -y
 sudo apt install lsscsi -y
 sudo apt install python3-pyqt5 -y
 
@@ -58,6 +58,11 @@ sudo apt install python3-pip -y
 pip3 install redis
 pip3 install pyqt5 
 pip3 install pyqt5 --upgrade
+
+#remove office
+sudo apt-get remove --purge libreoffice* -y
+sudo apt-get clean
+sudo apt-get autoremove
 
 sudo sed -i 's/databases 16/databases 81/g' /etc/redis/redis.conf
 sudo systemctl restart redis.service
