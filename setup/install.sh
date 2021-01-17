@@ -45,7 +45,8 @@ wget https://github.com/zytzjx/dsederaser/raw/master/setup/dsedcmc -O dsedcmc
 cp ./dsedcmc $DSEDHOME/dsedcmc
 chmod +x $DSEDHOME/dsedcmc
 
-sudo apt install ssh redis -y
+#sudo apt install ssh redis -y
+sudo apt install redis -y
 sudo apt install smartmontools -y
 #sudo apt install wxhexeditor -y
 sudo apt install lsscsi -y
@@ -89,6 +90,14 @@ python3 cmcdeployment.py
 crontab $DSEDHOME/download_cron
 #wget -i request.txt
 
+InstallShortcut(){
+   cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
+   chmod +x ~/Desktop/dsed.desktop
+   gio set ~/Desktop/dsed.desktop "metadata::trusted" true
+}
+InstallShortcut
+
+
 # url, servicename
 InstallService(){
    sname=/etc/systemd/system/$1
@@ -96,19 +105,16 @@ InstallService(){
    sudo mv ./$1 $sname
    sudo chmod 644 $sname
    sudo systemctl daemon-reload
-   sudo systemctl enable $1
-   sudo systemctl start $1
+   if sudo systemctl enable $1; then
+       echo "enable failed"
+   fi
+   if sudo systemctl start $1; then
+       echo "start failed"
+   fi
 }
+#https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service
+InstallService hdderaser.service 
+#https://raw.githubusercontent.com/zytzjx/dseddetect/master/dseddetect.service 
+InstallService dseddetect.service 
 
-InstallService hdderaser.service #https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service
-InstallService dseddetect.service #https://raw.githubusercontent.com/zytzjx/dseddetect/master/dseddetect.service 
 
-#crontab $DSEDHOME/download_cron
-
-InstallShortcut(){
-   cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
-   chmod +x ~/Desktop/dsed.desktop
-   gio set ~/Desktop/dsed.desktop "metadata::trusted" true
-}
-
-InstallShortcut
