@@ -58,7 +58,7 @@ sudo apt install python3-pyqt5 -y
 sudo apt install python3-pip -y
 pip3 install redis
 pip3 install pyqt5 
-pip3 install pyqt5 --upgrade
+#pip3 install pyqt5 --upgrade
 
 #remove office
 sudo apt-get remove --purge libreoffice* -y
@@ -79,14 +79,27 @@ else
   exit 3
 fi
 
+# disable autoupdate
+cat > 20auto-upgrades << "EOF2"
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Download-Upgradeable-Packages "0";
+APT::Periodic::AutocleanInterval "0";
+APT::Periodic::Unattended-Upgrade "1";
+EOF2
+
+sudo cp 20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
+
+
 echo "start downloading hydradownload"
 wget https://github.com/zytzjx/hydradownload/raw/master/hydradownload -O hydradownload
 chmod +x hydradownload
 
 wget https://raw.githubusercontent.com/zytzjx/dsederaser/master/utility/autoupdater.py -O autoupdater.py
 wget https://raw.githubusercontent.com/zytzjx/dsederaser/master/utility/cmcdeployment.py -O cmcdeployment.py
+
 python3 autoupdater.py
 python3 cmcdeployment.py
+
 crontab $DSEDHOME/download_cron
 #wget -i request.txt
 
