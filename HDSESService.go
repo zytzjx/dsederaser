@@ -281,14 +281,16 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		data, err := exec.Command("hdparm", "--yes-i-know-what-i-am-doing", "--sanitize-crypto-scramble", devicename).CombinedOutput()
 		if err != nil {
 			errorcode = 100
+			f.WriteString(fmt.Sprintf("return 100, command line error=%v\n", err))
 		}
 		f.WriteString(string(data))
-		if strings.IndexAny(string(data), "is not supported") < 0 {
+		if !strings.ContainsAny(string(data), "is not supported") {
 			time.Sleep(2 * time.Second)
 			f.WriteString(fmt.Sprintf("hdparm --sanitize-status %s\n", devicename))
 			exec.Command("hdparm", "--sanitize-status", devicename).Output()
 			time.Sleep(2 * time.Second)
 			exec.Command("hdparm", "--sanitize-status", devicename).Output()
+			errorcode = 0
 		} else {
 			errorcode = 100 //not support
 			f.WriteString(fmt.Sprintf("error=%v\n", err))
@@ -461,7 +463,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 20.12.15.0, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 21.08.10.0, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{

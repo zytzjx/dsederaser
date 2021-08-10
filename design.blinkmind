@@ -122,7 +122,7 @@
       "subKeys": [
         "693d9f0d-f8e5-4832-ba27-8ce8dacefa21"
       ],
-      "collapse": false,
+      "collapse": true,
       "style": null,
       "blocks": [
         {
@@ -215,7 +215,7 @@
       "subKeys": [
         "9081e7ae-d55d-4cfc-9c8c-d4747784b37e"
       ],
-      "collapse": false,
+      "collapse": true,
       "style": "{\"contentStyle\":{\"lineHeight\":\"1.0\",\"fontSize\":19}}",
       "blocks": [
         {
@@ -245,7 +245,7 @@
         "e1099343-2012-45ee-80e6-2a8c067f3e0a",
         "7d720eaa-fc43-4329-bca2-b5089edaa00c"
       ],
-      "collapse": false,
+      "collapse": true,
       "style": null,
       "blocks": [
         {
@@ -314,7 +314,7 @@
         "9a2e451a-c6b1-48b0-bd1c-30235ed7c2c0",
         "c5d5b43f-dfeb-400f-89ff-5495f2a338a4"
       ],
-      "collapse": false,
+      "collapse": true,
       "style": null,
       "blocks": [
         {
@@ -386,7 +386,7 @@
         "cd644066-e870-4a9e-a070-3152a4f0a131",
         "7baea352-7fce-41ef-841e-23b6bb542944"
       ],
-      "collapse": false,
+      "collapse": true,
       "style": null,
       "blocks": [
         {
@@ -429,7 +429,7 @@
         "5942d619-23e8-4f90-9243-913590c18b4e",
         "0b03586a-1092-4070-83df-4d785c9dd4e8"
       ],
-      "collapse": false,
+      "collapse": true,
       "style": null,
       "blocks": [
         {
