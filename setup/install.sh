@@ -47,7 +47,7 @@ chmod +x $DSEDHOME/dsedcmc
 
 sudo apt install ssh redis -y
 sudo apt install smartmontools -y
-sudo apt install wxhexeditor -y
+#sudo apt install wxhexeditor -y
 sudo apt install lsscsi -y
 sudo apt install python3-pyqt5 -y
 
@@ -56,8 +56,13 @@ sudo apt install python3-pyqt5 -y
 
 sudo apt install python3-pip -y
 pip3 install redis
-pip3 install pyqt5 
+pip3 install pyqt5==5.15.4 
 pip3 install pyqt5 --upgrade
+
+#remove office
+sudo apt-get remove --purge libreoffice* -y
+sudo apt-get clean -y
+sudo apt-get autoremove -y
 
 sudo sed -i 's/databases 16/databases 81/g' /etc/redis/redis.conf
 sudo systemctl restart redis.service
@@ -81,7 +86,7 @@ wget https://raw.githubusercontent.com/zytzjx/dsederaser/master/utility/autoupda
 wget https://raw.githubusercontent.com/zytzjx/dsederaser/master/utility/cmcdeployment.py -O cmcdeployment.py
 python3 autoupdater.py
 python3 cmcdeployment.py
-
+crontab $DSEDHOME/download_cron
 #wget -i request.txt
 
 # url, servicename
