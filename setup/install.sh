@@ -45,7 +45,8 @@ wget https://github.com/zytzjx/dsederaser/raw/master/setup/dsedcmc -O dsedcmc
 cp ./dsedcmc $DSEDHOME/dsedcmc
 chmod +x $DSEDHOME/dsedcmc
 
-sudo apt install ssh redis -y
+#sudo apt install ssh redis -y
+sudo apt install redis -y
 sudo apt install smartmontools -y
 #sudo apt install wxhexeditor -y
 sudo apt install lsscsi -y
@@ -56,8 +57,18 @@ sudo apt install python3-pyqt5 -y
 
 sudo apt install python3-pip -y
 pip3 install redis
+<<<<<<< HEAD
 pip3 install pyqt5==5.15.4 
 pip3 install pyqt5 --upgrade
+=======
+pip3 install pyqt5 
+#pip3 install pyqt5 --upgrade
+
+#remove office
+sudo apt-get remove --purge libreoffice* -y
+sudo apt-get clean -y
+sudo apt-get autoremove -y
+>>>>>>> c36c77d273e6a6b6478ce7aed8ddf2938383547c
 
 #remove office
 sudo apt-get remove --purge libreoffice* -y
@@ -78,16 +89,36 @@ else
   exit 3
 fi
 
+# disable autoupdate
+cat > 20auto-upgrades << "EOF2"
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Download-Upgradeable-Packages "0";
+APT::Periodic::AutocleanInterval "0";
+APT::Periodic::Unattended-Upgrade "1";
+EOF2
+
+sudo cp 20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
+
+
 echo "start downloading hydradownload"
 wget https://github.com/zytzjx/hydradownload/raw/master/hydradownload -O hydradownload
 chmod +x hydradownload
 
 wget https://raw.githubusercontent.com/zytzjx/dsederaser/master/utility/autoupdater.py -O autoupdater.py
 wget https://raw.githubusercontent.com/zytzjx/dsederaser/master/utility/cmcdeployment.py -O cmcdeployment.py
+
 python3 autoupdater.py
 python3 cmcdeployment.py
 crontab $DSEDHOME/download_cron
 #wget -i request.txt
+
+InstallShortcut(){
+   cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
+   chmod +x ~/Desktop/dsed.desktop
+   gio set ~/Desktop/dsed.desktop "metadata::trusted" true
+}
+InstallShortcut
+
 
 # url, servicename
 InstallService(){
@@ -96,19 +127,14 @@ InstallService(){
    sudo mv ./$1 $sname
    sudo chmod 644 $sname
    sudo systemctl daemon-reload
-   sudo systemctl enable $1
-   sudo systemctl start $1
+   if sudo systemctl enable $1; then
+       echo "enable failed"
+   fi
+   if sudo systemctl start $1; then
+       echo "start failed"
+   fi
 }
-
-InstallService hdderaser.service #https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service
-InstallService dseddetect.service #https://raw.githubusercontent.com/zytzjx/dseddetect/master/dseddetect.service 
-
-#crontab $DSEDHOME/download_cron
-
-InstallShortcut(){
-   cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
-   chmod +x ~/Desktop/dsed.desktop
-   gio set ~/Desktop/dsed.desktop "metadata::trusted" true
-}
-
-InstallShortcut
+#https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service
+InstallService hdderaser.service 
+#https://raw.githubusercontent.com/zytzjx/dseddetect/master/dseddetect.service 
+InstallService dseddetect.service 

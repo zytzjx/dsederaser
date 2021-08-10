@@ -6,14 +6,15 @@
 
 [Unit]
 Description=Futuredial DSES Eraser Service
-After=graphical.target
+#After=graphical.target
 
 [Service]
-Type=simple
-User=qa
+Type=idle
+#User=qa
+Environment="DSEDHOME=/opt/futuredial/dsed"
 Restart=always
+ExecStart=/opt/futuredial/dsed/dsederaser
 WorkingDirectory=/opt/futuredial/dsed
-ExecStart=sudo /opt/futuredial/dsed/dsederaser
 
 [Install]
 WantedBy=multi-user.target
