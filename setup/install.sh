@@ -57,18 +57,8 @@ sudo apt install python3-pyqt5 -y
 
 sudo apt install python3-pip -y
 pip3 install redis
-<<<<<<< HEAD
 pip3 install pyqt5==5.15.4 
 pip3 install pyqt5 --upgrade
-=======
-pip3 install pyqt5 
-#pip3 install pyqt5 --upgrade
-
-#remove office
-sudo apt-get remove --purge libreoffice* -y
-sudo apt-get clean -y
-sudo apt-get autoremove -y
->>>>>>> c36c77d273e6a6b6478ce7aed8ddf2938383547c
 
 #remove office
 sudo apt-get remove --purge libreoffice* -y
