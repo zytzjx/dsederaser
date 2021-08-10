@@ -25,21 +25,27 @@ syslog.syslog('dsed.deployment: hydradownload.clientstatus={}'.format(hydradownl
 
 def stopService():
     #stop service
-    r.publish("inittask", json.dumps({'message':'stop daemon service...'}))
-    sudoPassword = 'qa'
-    command = 'systemctl stop dseddetect.service'
-    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
-    command = 'systemctl stop hdderaser.service'
-    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+    try:
+        r.publish("inittask", json.dumps({'message':'stop daemon service...'}))
+        sudoPassword = 'qa'
+        command = 'systemctl stop dseddetect.service'
+        os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+        command = 'systemctl stop hdderaser.service'
+        os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+    except:
+        pass
 
 def startService():
     #stop service
-    r.publish("inittask", json.dumps({'message':'start daemon service...'}))
-    sudoPassword = 'qa'
-    command = 'systemctl start dseddetect.service'
-    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
-    command = 'systemctl start hdderaser.service'
-    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+    try:
+        r.publish("inittask", json.dumps({'message':'start daemon service...'}))
+        sudoPassword = 'qa'
+        command = 'systemctl start dseddetect.service'
+        os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+        command = 'systemctl start hdderaser.service'
+        os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+    except:
+        syslog.syslog("start service failed.")
 
 # change file executable
 def changefileExe():
