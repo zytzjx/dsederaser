@@ -82,7 +82,6 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(msgOK)
-	return
 }
 
 func stopTaskHandler(w http.ResponseWriter, r *http.Request) {
@@ -100,6 +99,4 @@ func stopTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	w.Write(msgOK)
-
-	return
 }

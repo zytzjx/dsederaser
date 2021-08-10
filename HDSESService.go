@@ -48,9 +48,9 @@ func (pl *processlabel) Add(label int, cmd *exec.Cmd) {
 	pl.mu.Lock()
 	defer pl.mu.Unlock()
 
-	if _, ok := pl.cmddict[label]; ok {
-		delete(pl.cmddict, label)
-	}
+	// if _, ok := pl.cmddict[label]; ok {
+	// 	delete(pl.cmddict, label)
+	// }
 	//fmt.Printf("Add: %d  %v\n", label, cmd)
 	pl.cmddict[label] = cmd
 }
@@ -155,7 +155,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 	}()
 
 	// Start the command and check for errors
-	err = cmd.Start()
+	cmd.Start()
 
 	// Wait for all output to be processed
 	<-done
@@ -255,7 +255,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		exec.Command("hdparm", "--user-master", "u", "--security-set-pass", "PASSFD", devicename).Output()
 		f.WriteString(fmt.Sprintf("hdparm --user-master u --security-erase PASSFD %s\n", devicename))
 		exec.Command("hdparm", "--user-master", "u", "--security-erase", "PASSFD", devicename).Output()
-		tend := (int64)(time.Now().Sub(tstart).Seconds())
+		tend := (int64)(time.Since(tstart).Seconds())
 		hours, remainder := divmod(tend, 3600)
 		minutes, seconds := divmod(remainder, 60)
 		send := fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
@@ -295,7 +295,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 			errorcode = 100 //not support
 			f.WriteString(fmt.Sprintf("error=%v\n", err))
 		}
-		tend := (int64)(time.Now().Sub(tstart).Seconds())
+		tend := (int64)(time.Since(tstart).Seconds())
 		hours, remainder := divmod(tend, 3600)
 		minutes, seconds := divmod(remainder, 60)
 		send := fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
