@@ -284,7 +284,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 			f.WriteString(fmt.Sprintf("return 100, command line error=%v\n", err))
 		}
 		f.WriteString(string(data))
-		if !strings.ContainsAny(string(data), "is not supported") {
+		if !strings.Contains(string(data), "is not supported") {
 			time.Sleep(2 * time.Second)
 			f.WriteString(fmt.Sprintf("hdparm --sanitize-status %s\n", devicename))
 			exec.Command("hdparm", "--sanitize-status", devicename).Output()
