@@ -58,7 +58,7 @@ DISCONNECT:
 
 func talktoclients(to net.Conn, msg []byte) {
 	wrote, err := to.Write(msg)
-	checkError(err, "Write: wrote "+string(wrote)+" bytes.")
+	checkError(err, "Write: wrote "+fmt.Sprint(wrote)+" bytes.")
 }
 
 //handleMsg client command

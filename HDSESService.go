@@ -342,6 +342,7 @@ func fmtDuration(d time.Duration) string {
 }
 
 func handlelogprogress(label int, line string) {
+	//TODO: this match get group, split sometime error
 	var validlog = regexp.MustCompile(`(\d*\.\d*)%.*?(\d*\.\d*)%.*?(\d*\.\d*)$`)
 	if !validlog.MatchString(line) {
 		fmt.Println("Not Match:" + line)
@@ -463,7 +464,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 21.08.10.0, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 21.08.11.0, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{

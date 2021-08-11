@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -17,6 +18,7 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 	label, _ := strconv.Atoi(mux.Vars(r)["label"])
 	name := r.FormValue("standard")
 
+	SetTransaction(label, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
 	Is512Sector := false
 
 	folder := path.Join(os.Getenv("DSEDHOME"), "logs", fmt.Sprintf("label_%d", label))
