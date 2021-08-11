@@ -4,6 +4,8 @@ import redis
 import syslog
 import subprocess
 
+import time
+
 syslog.openlog('dsed.autoupdater')
 r = redis.Redis()
 # downloader
@@ -27,6 +29,7 @@ if bool(dsed_status) and dsed_status.decode('utf-8') == 'running':
     syslog.syslog('autoupdater: deployment postponed ...')
 else:
     syslog.syslog('autoupdater: start deployment ...')
+    time.sleep(1)
     fn = os.path.join(dsed_home, 'cmcdeployment.py')
     if os.path.exists(fn):
         p = subprocess.Popen(['python3', fn], cwd=dsed_home)

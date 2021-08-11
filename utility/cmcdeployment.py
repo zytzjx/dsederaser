@@ -3,7 +3,7 @@ import redis
 import syslog
 import zipfile
 import stat
-import json
+import time
 
 syslog.openlog('dsed.deployment')
 syslog.syslog('dsed.deployment: ++ start')
@@ -25,27 +25,24 @@ syslog.syslog('dsed.deployment: hydradownload.clientstatus={}'.format(hydradownl
 
 def stopService():
     #stop service
-    try:
-        r.publish("inittask", json.dumps({'message':'stop daemon service...'}))
-        sudoPassword = 'qa'
-        command = 'systemctl stop dseddetect.service'
-        os.system('echo %s|sudo -S %s' % (sudoPassword, command))
-        command = 'systemctl stop hdderaser.service'
-        os.system('echo %s|sudo -S %s' % (sudoPassword, command))
-    except:
-        pass
+    r.publish("inittask", '{"message":"stop service ..."}')
+    sudoPassword = 'qa'
+    command = 'systemctl stop dseddetect.service'
+    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+    command = 'systemctl stop hdderaser.service'
+    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
 
 def startService():
     #stop service
-    try:
-        r.publish("inittask", json.dumps({'message':'start daemon service...'}))
-        sudoPassword = 'qa'
-        command = 'systemctl start dseddetect.service'
-        os.system('echo %s|sudo -S %s' % (sudoPassword, command))
-        command = 'systemctl start hdderaser.service'
-        os.system('echo %s|sudo -S %s' % (sudoPassword, command))
-    except:
-        syslog.syslog("start service failed.")
+    r.publish("inittask", '{"message":"start service ..."}')
+    print("start dseddetect.service")
+    sudoPassword = 'qa'
+    command = 'systemctl start dseddetect.service'
+    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+    time.sleep(1)
+    print("start hdderaser.service")
+    command = 'systemctl start hdderaser.service'
+    os.system('echo %s|sudo -S %s' % (sudoPassword, command))
 
 # change file executable
 def changefileExe():
@@ -75,9 +72,12 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
     # hydradownload.framework
     framework_ok = True
     syslog.syslog('dsed.deployment: read key hydradownload.framework')
-    i = r.spop('hydradownload.framework')
-    stopService()
-    while bool(i):
+    i = r.get('hydradownload.framework')
+    if bool(i):
+        stopService()
+        time.sleep(2)
+        
+    if  bool(i):
         fn = i.decode('utf-8')
         syslog.syslog('dsed.deployment: value {}'.format(fn))
         try:
@@ -88,11 +88,11 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
         except:
             syslog.syslog('dsed.deployment: exception')
             framework_ok = False
-        i = r.spop('hydradownload.framework')
+        #i = r.spop('hydradownload.framework')
+        r.set('hydradownload.framework','')
         pass
 
     changefileExe()
-    startService()
     
     # hydradownload.phonedll
     syslog.syslog('dsed.deployment: read key hydradownload.phonedll')
@@ -104,6 +104,8 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
         with open(fn, 'w') as f:
             f.write(hydradownload_clientstatus.decode('utf-8'))
 
+    
+startService()
 syslog.syslog('dsed.deployment: delete hydradownload keys')
 for k in r.scan_iter('hydradownload*'):
     r.delete(k)
