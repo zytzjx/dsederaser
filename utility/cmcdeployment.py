@@ -1,27 +1,41 @@
 import os
+import sys
 import redis
-import syslog
+import logging
 import zipfile
 import stat
 import time
+from logging.handlers import RotatingFileHandler
 
-syslog.openlog('dsed.deployment')
-syslog.syslog('dsed.deployment: ++ start')
 
-r = redis.Redis()
 
 dsed_home = os.getenv("DSEDHOME", '')
 if not bool(dsed_home):
     dsed_home = '/opt/futuredial/dsed'
     os.putenv("DSEDHOME", dsed_home)
 
+log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s(%(lineno)d) %(message)s')
+logFile = os.path.join(dsed_home, 'cmcdeployment.log')
+my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=50*1024*1024, backupCount=2, encoding=None, delay=0)
+my_handler.setFormatter(log_formatter)                                 
+my_handler.setLevel(logging.INFO)
+log = logging.getLogger('cmcdeployment')
+log.setLevel(logging.INFO)
+log.addHandler(my_handler)
+log.addHandler(logging.StreamHandler(sys.stdout))
+log.info('dsed.deployment')
+log.info('dsed.deployment: ++ start')
+
+r = redis.Redis()
+
+
 hydradownload_running = r.get('hydradownload.running')
 hydradownload_status = r.get('hydradownload.status')
 hydradownload_clientstatus = r.get('hydradownload.clientstatus')
 
-syslog.syslog('dsed.deployment: hydradownload.running={}'.format(hydradownload_running))
-syslog.syslog('dsed.deployment: hydradownload.status={}'.format(hydradownload_status))
-syslog.syslog('dsed.deployment: hydradownload.clientstatus={}'.format(hydradownload_clientstatus))
+log.info('dsed.deployment: hydradownload.running={}'.format(hydradownload_running))
+log.info('dsed.deployment: hydradownload.status={}'.format(hydradownload_status))
+log.info('dsed.deployment: hydradownload.clientstatus={}'.format(hydradownload_clientstatus))
 
 def stopService():
     #stop service
@@ -64,14 +78,14 @@ def changefileExe():
             os.chmod(fn, st.st_mode | stat.S_IEXEC|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
 
 
+framework_ok = False
 if hydradownload_running==b'0' and hydradownload_status==b'complete':
-    syslog.syslog('dsed.deployment: start deployment ...')
-    syslog.syslog('dsed.deployment: set hydradownload.status=pause')
+    log.info('dsed.deployment: start deployment ...')
+    log.info('dsed.deployment: set hydradownload.status=pause')
     r.set('hydradownload.status', 'pause')
     # keys = ['hydradownload.framework', 'hydradownload.phonedll']
     # hydradownload.framework
-    framework_ok = True
-    syslog.syslog('dsed.deployment: read key hydradownload.framework')
+    log.info('dsed.deployment: read key hydradownload.framework')
     i = r.get('hydradownload.framework')
     if bool(i):
         stopService()
@@ -79,14 +93,16 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
         
     if  bool(i):
         fn = i.decode('utf-8')
-        syslog.syslog('dsed.deployment: value {}'.format(fn))
+        log.info('dsed.deployment: value {}'.format(fn))
         try:
             if os.path.exists(fn):
                 with zipfile.ZipFile(fn, 'r') as f:
                     f.extractall(os.environ['DSEDHOME'])
                 os.remove(fn)
+
+                framework_ok = True
         except:
-            syslog.syslog('dsed.deployment: exception')
+            log.info('dsed.deployment: exception')
             framework_ok = False
         #i = r.spop('hydradownload.framework')
         r.set('hydradownload.framework','')
@@ -95,9 +111,9 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
     changefileExe()
     
     # hydradownload.phonedll
-    syslog.syslog('dsed.deployment: read key hydradownload.phonedll')
+    log.info('dsed.deployment: read key hydradownload.phonedll')
     # hydradownload.
-    syslog.syslog('dsed.deployment: read key hydradownload.phonetips')
+    log.info('dsed.deployment: read key hydradownload.phonetips')
     # save hydradownload.clientstatus
     if framework_ok :
         fn = os.path.join(os.environ['DSEDHOME'], 'clientstatus.json')
@@ -106,9 +122,11 @@ if hydradownload_running==b'0' and hydradownload_status==b'complete':
 
     
 startService()
-syslog.syslog('dsed.deployment: delete hydradownload keys')
-for k in r.scan_iter('hydradownload*'):
-    r.delete(k)
-syslog.syslog('dsed.deployment: -- complete')
-syslog.closelog()
+
+if framework_ok:
+    log.info('dsed.deployment: delete hydradownload keys')
+    for k in r.scan_iter('hydradownload*'):
+        r.delete(k)
+
+log.info('dsed.deployment: -- complete')
 r.publish("inittask", '{"action":"close"}')
