@@ -83,8 +83,9 @@ func SetTransaction(label int, key string, value interface{}) error {
 	if !ok {
 		return errors.New("not found label")
 	}
-
-	return client.HSet(ctx, "transaction", key, value).Err()
+	kv := make(map[string]interface{})
+	kv[key] = value
+	return client.HSet(ctx, "transaction", kv).Err()
 }
 
 // GetTransaction Transaction
