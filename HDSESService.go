@@ -343,16 +343,29 @@ func fmtDuration(d time.Duration) string {
 
 func handlelogprogress(label int, line string) {
 	//TODO: this match get group, split sometime error
-	var validlog = regexp.MustCompile(`(\d*\.\d*)%.*?(\d*\.\d*)%.*?(\d*\.\d*)$`)
+	//var validlog = regexp.MustCompile(`(\d*\.\d*)%.*?(\d*\.\d*)%.*?(\d*\.\d*)$`)
+	var validlog = regexp.MustCompile(`^\W+(\d+)\W+(\d+)\W+.*?(\d*\.\d*)%\W+(\d*\.\d*)%\W+(\d{2}:\d{2}:\d{2})\W+(\d{2}:\d{2}:\d{2})\W+(\d{2}:\d{2}:\d{2})\W+(\d+)\W+(\d*\.\d*)\W+(\d*\.\d*)$`)
 	if !validlog.MatchString(line) {
 		fmt.Println("Not Match:" + line)
 		return
 	}
-	sp := func(r rune) bool {
-		return r == '\t' || r == ' '
-	}
-	infos := strings.FieldsFunc(line, sp)
+	// sp := func(r rune) bool {
+	// 	return r == '\t' || r == ' '
+	// }
+	//infos := strings.FieldsFunc(line, sp)
 	//write database
+	//"   1      1 0xff   0.180%   0.180% 00:00:05 00:00:05 16:28:56 00002782   107.33   107.33"
+	//"1"
+	//"1",
+	//"0.180"
+	//"0.180"
+	//"00:00:05"
+	//"00:00:05"
+	//"16:28:56"
+	//"00002782"
+	//"107.33"
+	//"107.33"
+	infos := validlog.FindStringSubmatch(line)
 	infos[9] = strings.Split(infos[9], ".")[0] + " MB/s"
 	infos[5] = infos[5][:len(infos[5])-3]
 
@@ -464,7 +477,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 21.08.11.0, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 21.08.16.0, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{
