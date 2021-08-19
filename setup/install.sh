@@ -8,12 +8,27 @@ if [[ $(lsb_release -rs) != "20.04" ]]; then
    exit 2
 fi
 
-sudo mkdir -p /opt/futuredial
-sudo chown $USER:$USER /opt/futuredial
-sudo mkdir -p /opt/futuredial/dsed
-sudo mkdir -p /opt/futuredial/hydradownloader
-sudo chown $USER:$USER /opt/futuredial/dsed
-sudo chown $USER:$USER /opt/futuredial/hydradownloader
+echo -e "\e[1:33mPlease input [sudo] password:\e[0m"
+{
+   password=""
+   while read -r -n 1 key; do
+      if [[ $key == "" ]]; then
+         break
+      fi
+      # Add the key to the variable which is pressed by the user.
+      password+=$key
+   done
+} 2>/dev/null
+
+
+echo $password | sudo -S mkdir -p /opt/futuredial
+echo $password | sudo -S chown $USER:$USER /opt/futuredial
+echo $password | sudo -S mkdir -p /opt/futuredial/dsed
+echo $password | sudo -S mkdir -p /opt/futuredial/hydradownloader
+echo $password | sudo -S chown $USER:$USER /opt/futuredial/dsed
+echo $password | sudo -S chown $USER:$USER /opt/futuredial/hydradownloader
+
+echo $password > /opt/futuredial/dsed/spusdwo
 
 # echo add environment
 if [[ -z $DSEDHOME ]]; then 
@@ -29,15 +44,17 @@ echo $DSEDHOME
 # echo -e "\e[1;31mThis is red text\e[0m"
 # echo "Please input this product SN:"
 echo -e "\e[1;31mPlease input this product SN:\e[0m"
-serialnumber=""
-while read -r -n 1 key; do
-   if [[ $key == "" ]]; then
-      break
-   fi
-   # Add the key to the variable which is pressed by the user.
-   serialnumber+=$key
-done
-echo $serialnumber
+{
+   serialnumber=""
+   while read -r -n 1 key; do
+      if [[ $key == "" ]]; then
+         break
+      fi
+      # Add the key to the variable which is pressed by the user.
+      serialnumber+=$key
+   done
+} 2>/dev/null
+echo -e "\e[1;34mSERIAL:"$serialnumber"\e[0m"
 
 echo "start downloading dsedcmc"
 wget https://github.com/zytzjx/dsederaser/raw/master/setup/dsedcmc -O dsedcmc
@@ -46,27 +63,27 @@ cp ./dsedcmc $DSEDHOME/dsedcmc
 chmod +x $DSEDHOME/dsedcmc
 
 #sudo apt install ssh redis -y
-sudo apt install redis -y
-sudo apt install smartmontools -y
+echo $password | sudo -S apt install redis -y
+echo $password | sudo -S apt install smartmontools -y
 #sudo apt install wxhexeditor -y
-sudo apt install lsscsi -y
-sudo apt install python3-pyqt5 -y
+echo $password | sudo -S apt install lsscsi -y
+echo $password | sudo -S apt install python3-pyqt5 -y
 
 #sudo apt install openssh-server -y
 #gsettings set org.gnome.Vino require-encryption false
 
-sudo apt install python3-pip -y
+echo $password | sudo -S apt install python3-pip -y
 pip3 install redis
 pip3 install pyqt5==5.15.4 
 pip3 install pyqt5 --upgrade
 
 #remove office
-sudo apt-get remove --purge libreoffice* -y
-sudo apt-get clean -y
-sudo apt-get autoremove -y
+echo $password | sudo -S apt-get remove --purge libreoffice* -y
+echo $password | sudo -S apt-get clean -y
+echo $password | sudo -S apt-get autoremove -y
 
-sudo sed -i 's/databases 16/databases 81/g' /etc/redis/redis.conf
-sudo systemctl restart redis.service
+echo $password | sudo -S sed -i 's/databases 16/databases 81/g' /etc/redis/redis.conf
+echo $password | sudo -S systemctl restart redis.service
 
 #download 
 echo "start downloading the CMC config..."
@@ -87,7 +104,7 @@ APT::Periodic::AutocleanInterval "0";
 APT::Periodic::Unattended-Upgrade "1";
 EOF2
 
-sudo cp 20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
+echo $password | sudo -S cp 20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
 
 
 echo "start downloading hydradownload"
@@ -114,13 +131,13 @@ InstallShortcut
 InstallService(){
    sname=/etc/systemd/system/$1
    #wget $2 -O aaa.service
-   sudo mv ./$1 $sname
-   sudo chmod 644 $sname
-   sudo systemctl daemon-reload
-   if sudo systemctl enable $1; then
+   echo $password | sudo -S mv ./$1 $sname
+   echo $password | sudo -S chmod 644 $sname
+   echo $password | sudo -S systemctl daemon-reload
+   if echo $password | sudo -S systemctl enable $1; then
        echo "enable failed"
    fi
-   if sudo systemctl start $1; then
+   if echo $password | sudo -S systemctl start $1; then
        echo "start failed"
    fi
 }

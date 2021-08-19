@@ -13,4 +13,5 @@ func TestCreateRedisPool(t *testing.T) {
 func TestWriteStartTime(t *testing.T) {
 	CreateRedisPool(5)
 	SetTransaction(1, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
+	SetTransaction(1, "errorCode", 1)
 }
