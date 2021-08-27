@@ -419,7 +419,7 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 
 	processlist.Add(label, cmd)
 
-	f, err := os.OpenFile(fmt.Sprintf("%s/logs/%s/log_%d.log", os.Getenv("DSEDHOME"), logpath, label), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(fmt.Sprintf("%s/logs/%s/log_%d.log", os.Getenv("DSEDHOME"), logpath, label), os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -477,7 +477,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 21.08.16.0, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 21.08.27.0, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{
