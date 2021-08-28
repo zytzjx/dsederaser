@@ -9,6 +9,30 @@ import (
 	"testing"
 )
 
+func TestCreateFile(t *testing.T) {
+	f, err := os.OpenFile("logs/test.txt", os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		t.Error("file error")
+		return
+	}
+	f.WriteString("fhdjsafhdsalfd\n")
+	f.WriteString("fdasfdsafdsafdsafdsafdsafds\n")
+	f.WriteString("fdasfdsafdsafdsafdsafdsafds\n")
+	f.WriteString("fdasfdsafdsafdsafdsafdsafds\n")
+	f.WriteString("fdasfdsafdsafdsafdsafdsafds\n")
+	f.WriteString("fdasfdsafdsafdsafdsafdsafds\n")
+	f.Close()
+
+	ff, err := os.OpenFile("logs/test.txt", os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0666)
+	if err != nil {
+		t.Error("file error")
+		return
+	}
+	ff.WriteString("11111111fhdjsafhdsalfd\n")
+	ff.WriteString("2222222fdasfdsafdsafdsafdsafdsafds\n")
+	ff.Close()
+}
+
 func TestHandlelogprogress(t *testing.T) {
 	CreateRedisPool(5)
 	line := `   1      1 0xff   0.159%   0.159% 00:00:05 00:00:05 10:38:01 00003141    93.18    93.18`

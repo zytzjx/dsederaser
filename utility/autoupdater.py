@@ -35,4 +35,5 @@ else:
         p = subprocess.Popen(['python3', fn], cwd=dsed_home)
         p.wait()
 syslog.syslog('autoupdater: deployment complete ...')
+r.set("hydradownload.status","idle")
 syslog.closelog()
