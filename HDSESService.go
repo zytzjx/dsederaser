@@ -97,6 +97,25 @@ func ScanItems(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	return 0, nil, nil
 }
 
+func CheckRunProcessExit(devicename string) {
+	//root     2930130  2.9  0.0   6788  5892 ?        S    08:48   0:34 /opt/futuredial/dsed/dskwipe /dev/sg4 -y -n 8000 0x00
+	out, err := exec.Command("bash", "-c", fmt.Sprintf("ps aux | grep %s", devicename)).Output()
+	if err != nil {
+		return
+	}
+	re := regexp.MustCompile(`^root\s+(\d+)\s+\S+\s+\S+\s+\d+\s+(\d+)\s+\?`)
+	scanner := bufio.NewScanner(bytes.NewReader(out))
+	for scanner.Scan() {
+		line := scanner.Text()
+		//fmt.Println(scanner.Text())
+		match := re.FindStringSubmatch(line)
+		if len(match) > 1 {
+			fmt.Println(match[1])
+			exec.Command("kill", "-9", match[1]).Output()
+		}
+	}
+}
+
 // RunExeWipe run dskwipe and handle output to database
 func RunExeWipe(logpath string, devicename string, patten string, label int) error {
 
@@ -148,7 +167,6 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 			f.WriteString(line + "\n")
 			handlelogprogress(label, line)
 		}
-
 		// We're all done, unblock the channel
 		done <- true
 
@@ -411,6 +429,7 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//root     2930130  2.9  0.0   6788  5892 ?        S    08:48   0:34 /opt/futuredial/dsed/dskwipe /dev/sg4 -y -n 8000 0x00
 	dskwipe := path.Join(dir, "dskwipe")
 	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
@@ -477,7 +496,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 21.08.27.1, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 21.09.2.1, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{
@@ -494,7 +513,7 @@ func main() {
 
 	CreateRedisPool(GetLabelsCnt())
 	srv := &http.Server{
-		Addr: "0.0.0.0:12100",
+		Addr: "127.0.0.1:12100",
 		// Good practice to set timeouts to avoid Slowloris attacks.
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,

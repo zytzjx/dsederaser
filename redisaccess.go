@@ -77,6 +77,21 @@ func ping(label int) error {
 	return nil
 }
 
+func GetTaskStatus(label int) bool {
+	client, ok := clients[label]
+	if !ok {
+		return false
+	}
+	ss, err := client.Get(ctx, "processingstatus").Result()
+	if err != nil {
+		return false
+	}
+	if ss == "start" {
+		return true
+	}
+	return false
+}
+
 // SetTransaction set into transaction hash map
 func SetTransaction(label int, key string, value interface{}) error {
 	client, ok := clients[label]

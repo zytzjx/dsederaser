@@ -47,7 +47,13 @@ func startTaskHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(msgError)
 		return
 	}
-
+	if GetTaskStatus(label) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(msgOK)
+		return
+	}
+	CheckRunProcessExit(sgName)
 	fmt.Printf("%v_%s_%s_%s_%s_%d\n", Is512Sector, name, folder, sdevname, sgName, label)
 	if name == "SecureErase" {
 		go RunSecureErase(folder, sdevname, label)
