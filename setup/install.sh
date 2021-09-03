@@ -8,7 +8,7 @@ if [[ $(lsb_release -rs) != "20.04" ]]; then
    exit 2
 fi
 
-echo -e "\e[1:33mPlease input [sudo] password:\e[0m"
+echo -e "\e[1;33mPlease input [sudo] password:\e[0m"
 {
    password=""
    while read -r -n 1 key; do
