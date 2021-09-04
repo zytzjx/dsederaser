@@ -133,9 +133,9 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 
 	f, err := os.OpenFile(fmt.Sprintf("%s/log_%d.log", logpath, label), os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-		Set(label, "errorcode", 1, 0)
-		SetTransaction(label, "errorCode", 100)
+		//log.Fatalf("error opening file: %v", err)
+		Set(label, "errorcode", 99, 0)
+		SetTransaction(label, "errorCode", 99)
 		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 		// Publish(label, "taskdone", 1)
 		PublishTaskDone(label, 20)
@@ -206,9 +206,9 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 func RunSecureErase(logpath string, devicename string, label int) {
 	f, err := os.OpenFile(fmt.Sprintf("%s/log_%d.log", logpath, label), os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-		Set(label, "errorcode", 1, 0)
-		SetTransaction(label, "errorCode", 100)
+		//log.Fatalf("error opening file: %v", err)
+		Set(label, "errorcode", 99, 0)
+		SetTransaction(label, "errorCode", 99)
 		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 		// Publish(label, "taskdone", 1)
 		PublishTaskDone(label, 20)
@@ -427,7 +427,12 @@ func handlelogprogress(label int, line string) {
 func RunWipe(logpath string, devicename string, patten string, label int) {
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		log.Fatal(err)
+		Set(label, "errorcode", 99, 0)
+		SetTransaction(label, "errorCode", 99)
+		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+		// Publish(label, "taskdone", 1)
+		PublishTaskDone(label, 20)
+		return
 	}
 	//root     2930130  2.9  0.0   6788  5892 ?        S    08:48   0:34 /opt/futuredial/dsed/dskwipe /dev/sg4 -y -n 8000 0x00
 	dskwipe := path.Join(dir, "dskwipe")
