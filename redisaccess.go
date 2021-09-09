@@ -146,6 +146,19 @@ func GetInt(label int, key string) (int, error) {
 	return client.Get(ctx, key).Int()
 }
 
+func setErrorDone(label int) error {
+	client, ok := clients[label]
+	if !ok {
+		return errors.New("not found label")
+	}
+	kv := make(map[string]interface{})
+	kv["progress"] = "100.00%"
+	rsProcess, _ := json.Marshal(map[string]interface{}{"label": label, "msg": kv})
+	Publish(label, "progress", rsProcess)
+
+	return client.HSet(ctx, "processing", kv).Err()
+}
+
 func setProgressbar(label int, values []string) error {
 	client, ok := clients[label]
 	if !ok {

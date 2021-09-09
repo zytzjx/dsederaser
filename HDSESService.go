@@ -103,15 +103,17 @@ func CheckRunProcessExit(devicename string) {
 	if err != nil {
 		return
 	}
-	re := regexp.MustCompile(`^root\s+(\d+)\s+\S+\s+\S+\s+\d+\s+(\d+)\s+\?`)
+	re := regexp.MustCompile(`^root\s+(\d+)\s+\S+\s+\S+\s+\d+\s+(\d+)\s+\?.*?(/dev/sg\d+)`)
 	scanner := bufio.NewScanner(bytes.NewReader(out))
 	for scanner.Scan() {
 		line := scanner.Text()
 		//fmt.Println(scanner.Text())
 		match := re.FindStringSubmatch(line)
-		if len(match) > 1 {
+		if len(match) > 3 {
 			fmt.Println(match[1])
-			exec.Command("kill", "-9", match[1]).Output()
+			if match[3] == devicename {
+				exec.Command("kill", "-9", match[1]).Output()
+			}
 		}
 	}
 }
@@ -158,6 +160,8 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 	scanner.Split(ScanItems)
 	// Use the scanner to scan the output line by line and log it
 	// It's running in a goroutine so that it doesn't block
+	values := []string{"1", "1", "0x00", "0.00%", "0.00%", "00:01", "", "", "00:01", "0.00", "0.00"}
+	setProgressbar(label, values)
 	go func() {
 
 		// Read line by line and process it
@@ -185,16 +189,18 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 			waitStatus := exitError.Sys().(syscall.WaitStatus)
 			fmt.Printf("WipeExitCode=%d\n", waitStatus.ExitStatus())
 			f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", waitStatus.ExitStatus()))
-			Set(label, "errorcode", waitStatus.ExitStatus(), 0)
-			SetTransaction(label, "errorCode", waitStatus.ExitStatus())
+			setErrorDone(label)
+			Set(label, "errorcode", 111, 0)
+			SetTransaction(label, "errorCode", 111)
+			SetTransaction(label, "utilerrorCode", waitStatus.ExitStatus())
 		}
 	} else {
 		// Success
 		waitStatus := cmd.ProcessState.Sys().(syscall.WaitStatus)
 		fmt.Printf("WipeExitCode=%d\n", waitStatus.ExitStatus())
 		f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", waitStatus.ExitStatus()))
-		Set(label, "errorcode", waitStatus.ExitStatus(), 0)
-		SetTransaction(label, "errorCode", waitStatus.ExitStatus())
+		Set(label, "errorcode", 0, 0)
+		SetTransaction(label, "errorCode", 0)
 	}
 	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 	// Publish(label, "taskdone", 1)
@@ -262,7 +268,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 	var errorcode int
 	smd5, err := funReadData()
 	if err != nil {
-		errorcode = 10
+		errorcode = 20
 	}
 
 	bverify := false
@@ -286,7 +292,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		// Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 		smd51, err := funReadData()
 		if err != nil {
-			errorcode = 10
+			errorcode = 20
 		}
 		if errorcode == 0 {
 			bverify = smd51 == smd5
@@ -327,7 +333,7 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		if errorcode != 100 {
 			smd51, err := funReadData()
 			if err != nil {
-				errorcode = 10
+				errorcode = 20
 			}
 			if errorcode == 0 {
 				bverify = smd51 != smd5
@@ -343,8 +349,9 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		SetTransaction(label, "errorCode", 0)
 	} else {
 		f.WriteString(fmt.Sprintf("WipeExitCode=%d\n", errorcode))
-		Set(label, "errorcode", errorcode, 0)
-		SetTransaction(label, "errorCode", errorcode)
+		Set(label, "errorcode", 112, 0)
+		SetTransaction(label, "errorCode", 112)
+		SetTransaction(label, "utilerrorCode", errorcode)
 	}
 	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 	// Publish(label, "taskdone", 1)
@@ -501,7 +508,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 21.09.2.1, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 21.09.8.1, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{
