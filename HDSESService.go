@@ -443,10 +443,10 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 	}
 	//root     2930130  2.9  0.0   6788  5892 ?        S    08:48   0:34 /opt/futuredial/dsed/dskwipe /dev/sg4 -y -n 8000 0x00
 	dskwipe := path.Join(dir, "dskwipe")
-	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
+	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "200", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 	SetTransaction(label, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
-	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "8000", patten)
+	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "200", patten)
 
 	processlist.Add(label, cmd)
 
@@ -508,7 +508,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 21.09.8.1, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 21.09.29.1, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{
