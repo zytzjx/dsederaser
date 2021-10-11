@@ -65,6 +65,16 @@ func (pl *processlabel) Remove(label int) {
 	}
 }
 
+func FmtDuration(d time.Duration) string {
+	d = d.Round(time.Second)
+	h := d / time.Hour
+	d -= h * time.Hour
+	m := d / time.Minute
+	d -= m * time.Minute
+	s := d / time.Second
+	return fmt.Sprintf("%02d:%02d:%02d", h, m, s)
+}
+
 // IsSSD check is SSD
 func IsSSD(devicename string) bool {
 	isSSD := false
@@ -126,10 +136,10 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 		log.Fatal(err)
 	}
 	dskwipe := path.Join(dir, "dskwipe")
-	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
+	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "200", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 	SetTransaction(label, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
-	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "8000", patten)
+	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "200", patten)
 
 	processlist.Add(label, cmd)
 
@@ -140,11 +150,19 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 		SetTransaction(label, "errorCode", 99)
 		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 		// Publish(label, "taskdone", 1)
+		ansic, err := GetString(label, "starttasktime")
+		if err == nil {
+			ts, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic)
+			ansic1 := time.Now().Format("Mon Jan _2 15:04:05 2006")
+			ts1, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic1)
+			diff := ts1.Sub(ts)
+			SetTransaction(label, "timetaken", FmtDuration(diff))
+		}
 		PublishTaskDone(label, 20)
 		return err
 	}
 	defer f.Close()
-	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten))
+	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "200", patten))
 
 	// Get a pipe to read from standard out
 	r, _ := cmd.StdoutPipe()
@@ -203,6 +221,14 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 		SetTransaction(label, "errorCode", 0)
 	}
 	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+	ansic, err := GetString(label, "starttasktime")
+	if err == nil {
+		ts, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic)
+		ansic1 := time.Now().Format("Mon Jan _2 15:04:05 2006")
+		ts1, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic1)
+		diff := ts1.Sub(ts)
+		SetTransaction(label, "timetaken", FmtDuration(diff))
+	}
 	// Publish(label, "taskdone", 1)
 	PublishTaskDone(label, 21)
 	return err
@@ -216,6 +242,14 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		Set(label, "errorcode", 99, 0)
 		SetTransaction(label, "errorCode", 99)
 		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+		ansic, err := GetString(label, "starttasktime")
+		if err == nil {
+			ts, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic)
+			ansic1 := time.Now().Format("Mon Jan _2 15:04:05 2006")
+			ts1, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic1)
+			diff := ts1.Sub(ts)
+			SetTransaction(label, "timetaken", FmtDuration(diff))
+		}
 		// Publish(label, "taskdone", 1)
 		PublishTaskDone(label, 20)
 		return
@@ -354,6 +388,14 @@ func RunSecureErase(logpath string, devicename string, label int) {
 		SetTransaction(label, "utilerrorCode", errorcode)
 	}
 	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+	ansic, err := GetString(label, "starttasktime")
+	if err == nil {
+		ts, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic)
+		ansic1 := time.Now().Format("Mon Jan _2 15:04:05 2006")
+		ts1, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic1)
+		diff := ts1.Sub(ts)
+		SetTransaction(label, "timetaken", FmtDuration(diff))
+	}
 	// Publish(label, "taskdone", 1)
 	PublishTaskDone(label, 23)
 }
@@ -437,6 +479,14 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 		Set(label, "errorcode", 99, 0)
 		SetTransaction(label, "errorCode", 99)
 		Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+		ansic, err := GetString(label, "starttasktime")
+		if err == nil {
+			ts, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic)
+			ansic1 := time.Now().Format("Mon Jan _2 15:04:05 2006")
+			ts1, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic1)
+			diff := ts1.Sub(ts)
+			SetTransaction(label, "timetaken", FmtDuration(diff))
+		}
 		// Publish(label, "taskdone", 1)
 		PublishTaskDone(label, 20)
 		return
@@ -455,7 +505,7 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
-	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten))
+	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "200", patten))
 
 	var mu sync.Mutex
 
@@ -500,6 +550,14 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 		SetTransaction(label, "errorCode", waitStatus.ExitStatus())
 	}
 	Set(label, "endtasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
+	ansic, err := GetString(label, "starttasktime")
+	if err == nil {
+		ts, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic)
+		ansic1 := time.Now().Format("Mon Jan _2 15:04:05 2006")
+		ts1, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic1)
+		diff := ts1.Sub(ts)
+		SetTransaction(label, "timetaken", FmtDuration(diff))
+	}
 }
 
 var mu sync.Mutex
@@ -508,7 +566,7 @@ var processlist *processlabel
 var configxmldata *configs
 
 func main() {
-	fmt.Println("hdsesserver version: 21.09.29.1, auther:Jeffery Zhang")
+	fmt.Println("hdsesserver version: 21.10.11.1, auther:Jeffery Zhang")
 	runtime.GOMAXPROCS(4)
 
 	processlist = &processlabel{

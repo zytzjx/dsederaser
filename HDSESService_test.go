@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestCreateFile(t *testing.T) {
@@ -31,6 +32,19 @@ func TestCreateFile(t *testing.T) {
 	ff.WriteString("11111111fhdjsafhdsalfd\n")
 	ff.WriteString("2222222fdasfdsafdsafdsafdsafdsafds\n")
 	ff.Close()
+}
+
+func TestTimeSpans(t *testing.T) {
+	ansic := time.Now().Format("Mon Jan _2 15:04:05 2006")
+	ts, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic)
+	time.Sleep(8 * time.Second)
+	ansic1 := time.Now().Format("Mon Jan _2 15:04:05 2006")
+	ts1, _ := time.Parse("Mon Jan _2 15:04:05 2006", ansic1)
+	diff := ts1.Sub(ts)
+	aa := diff.String()
+	fmt.Println(aa)
+	out := FmtDuration(diff)
+	fmt.Println(out)
 }
 
 func TestHandlelogprogress(t *testing.T) {
