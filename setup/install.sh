@@ -3,7 +3,7 @@ set -e
 
 # echo "This script is running as root $SUDO_USER"
 
-if [[ $(lsb_release -rs) != "20.04" ]]; then
+if [[ $(lsb_release -rs) != "20.04" ] && [ $(lsb_release -rs) != "18.04" ]]; then
    echo "Non-compatible version"
    exit 2
 fi
@@ -56,6 +56,20 @@ echo -e "\e[1;31mPlease input this product SN:\e[0m"
 } 2>/dev/null
 echo -e "\e[1;34mSERIAL:"$serialnumber"\e[0m"
 
+
+echo $password | sudo -S apt update
+#################################################################################
+##################### ubnutu 18.04 install python3.8 ############################
+## $ sudo apt-get update
+## $ sudo apt-get install software-properties-common
+## $ sudo add-apt-repository ppa:deadsnakes/ppa
+## $ sudo apt-get update
+## $ sudo apt-get install python3.8
+## $ sudo rm /usr/bin/python3   
+## $ sudo ln -s /usr/bin/python3.8 /usr/bin/python3
+#################
+## $ sudo apt install python3.8 
+#################################################################################
 echo "start downloading dsedcmc"
 wget https://github.com/zytzjx/dsederaser/raw/master/setup/dsedcmc -O dsedcmc
 
@@ -73,6 +87,10 @@ echo $password | sudo -S apt install python3-pyqt5 -y
 #gsettings set org.gnome.Vino require-encryption false
 
 echo $password | sudo -S apt install python3-pip -y
+python3 -m pip install --upgrade pip
+pip3 install --upgrade pip
+python3 -m pip install --upgrade setuptools
+pip3 install PyYAML==6.0 
 pip3 install redis
 pip3 install pyqt5==5.15.4 
 pip3 install pyqt5 --upgrade
@@ -135,13 +153,15 @@ InstallService(){
    echo $password | sudo -S chmod 644 $sname
    echo $password | sudo -S systemctl daemon-reload
    if echo $password | sudo -S systemctl enable $1; then
-       echo "enable failed"
+       echo "enable failed, reboot system"
    fi
-   if echo $password | sudo -S systemctl start $1; then
-       echo "start failed"
-   fi
+   # if echo $password | sudo -S systemctl start $1; then
+   #     echo "start failed"
+   # fi
 }
 #https://raw.githubusercontent.com/zytzjx/dsederaser/master/hdderaser.service
 InstallService hdderaser.service 
 #https://raw.githubusercontent.com/zytzjx/dseddetect/master/dseddetect.service 
 InstallService dseddetect.service 
+
+echo -e "\e[1;34mReboot SYSTEM\e[0m"

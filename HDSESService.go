@@ -136,10 +136,10 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 		log.Fatal(err)
 	}
 	dskwipe := path.Join(dir, "dskwipe")
-	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "200", patten)
+	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 	SetTransaction(label, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
-	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "200", patten)
+	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "8000", patten)
 
 	processlist.Add(label, cmd)
 
@@ -162,7 +162,7 @@ func RunExeWipe(logpath string, devicename string, patten string, label int) err
 		return err
 	}
 	defer f.Close()
-	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "200", patten))
+	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten))
 
 	// Get a pipe to read from standard out
 	r, _ := cmd.StdoutPipe()
@@ -493,10 +493,10 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 	}
 	//root     2930130  2.9  0.0   6788  5892 ?        S    08:48   0:34 /opt/futuredial/dsed/dskwipe /dev/sg4 -y -n 8000 0x00
 	dskwipe := path.Join(dir, "dskwipe")
-	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "200", patten)
+	fmt.Printf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten)
 	Set(label, "starttasktime", time.Now().Format("Mon Jan _2 15:04:05 2006"), 0)
 	SetTransaction(label, "StartTime", time.Now().Format("2006-01-02 15:04:05Z"))
-	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "200", patten)
+	cmd := exec.Command(dskwipe, devicename, "-y", "-n", "8000", patten)
 
 	processlist.Add(label, cmd)
 
@@ -505,7 +505,7 @@ func RunWipe(logpath string, devicename string, patten string, label int) {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
-	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "200", patten))
+	f.WriteString(fmt.Sprintf("%s %s %s %s %s %s\n", dskwipe, devicename, "-y", "-n", "8000", patten))
 
 	var mu sync.Mutex
 
