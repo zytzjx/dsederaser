@@ -3,7 +3,7 @@ set -e
 
 # echo "This script is running as root $SUDO_USER"
 
-if [[ $(lsb_release -rs) != "20.04" ] && [ $(lsb_release -rs) != "18.04" ]]; then
+if [ $(lsb_release -rs) != "20.04" ] && [ $(lsb_release -rs) != "18.04" ]; then
    echo "Non-compatible version"
    exit 2
 fi
@@ -78,6 +78,7 @@ chmod +x $DSEDHOME/dsedcmc
 
 #sudo apt install ssh redis -y
 echo $password | sudo -S apt install redis -y
+echo $password | sudo -S apt install sg3-utils -y
 echo $password | sudo -S apt install smartmontools -y
 #sudo apt install wxhexeditor -y
 echo $password | sudo -S apt install lsscsi -y
@@ -96,9 +97,9 @@ pip3 install pyqt5==5.15.4
 pip3 install pyqt5 --upgrade
 
 #remove office
-echo $password | sudo -S apt-get remove --purge libreoffice* -y
-echo $password | sudo -S apt-get clean -y
-echo $password | sudo -S apt-get autoremove -y
+#echo $password | sudo -S apt-get remove --purge libreoffice* -y
+#echo $password | sudo -S apt-get clean -y
+#echo $password | sudo -S apt-get autoremove -y
 
 echo $password | sudo -S sed -i 's/databases 16/databases 81/g' /etc/redis/redis.conf
 echo $password | sudo -S systemctl restart redis.service
@@ -141,6 +142,7 @@ InstallShortcut(){
    cp $DSEDHOME/dsed.desktop ~/Desktop/dsed.desktop
    chmod +x ~/Desktop/dsed.desktop
    gio set ~/Desktop/dsed.desktop "metadata::trusted" true
+   gio set ~/Desktop/dsed.desktop "metadata::trusted" yes
 }
 InstallShortcut
 
